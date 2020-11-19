@@ -84,6 +84,9 @@ namespace LocalPublish
                 if (f.IndexOf(".db") > -1) continue;
                 if (f.IndexOf("\\logs\\") > -1) continue;
                 if (f.IndexOf("\\data\\UserSet\\") > -1) continue;
+
+                if (f.IndexOf("Infragistics.") > -1 && f.IndexOf(".xml") > -1 ) continue;
+
                 FileInfo fi = new FileInfo(f);
                 ReleaseFileInfo file = new ReleaseFileInfo(f,f.Replace(this.txt_basedif.Text+"\\", ""), fi.Name, fi.LastWriteTime.Ticks);
                 newFileData.Add(file);
@@ -285,10 +288,12 @@ namespace LocalPublish
                 if (f.IndexOf(".db") > -1) continue;
                 if (f.IndexOf("\\logs\\") > -1) continue;
                 if (f.IndexOf("\\data\\UserSet\\") > -1) continue;
+                if (f.IndexOf("Infragistics.") > -1 && f.IndexOf(".xml") > -1) continue;
                 FileInfo fi = new FileInfo(f);
                 ReleaseFileInfo file = new ReleaseFileInfo(f, f.Replace(this.txt_basedif.Text + "\\", ""), fi.Name, fi.LastWriteTime.Ticks);
                 newFileData.Add(file);
             }
+            this.progressBar1.Value = 0;
             CompairFileCount = 0;
             int step = 100;
             if (newFileData.Count > 0)

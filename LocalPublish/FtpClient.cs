@@ -1,11 +1,4 @@
-﻿/* 
-* Copyright (c) 2006 WingHung
-* 
-* $Archive: /SpiderMan2005.root/SpiderMan/SpiderMan/SystemFrameworksProjects/Services/FtpClient.cs $ 
-* $Author: Xmx $ 
-* $Date: 06-09-04 19:18 $ 
-* $Revision: 4 $ 
-* */
+﻿
 
 
 //Upload

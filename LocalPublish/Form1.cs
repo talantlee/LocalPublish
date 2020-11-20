@@ -84,9 +84,11 @@ namespace LocalPublish
                 if (f.IndexOf(".db") > -1) continue;
                 if (f.IndexOf("\\logs\\") > -1) continue;
                 if (f.IndexOf("\\data\\UserSet\\") > -1) continue;
-
+                if (f.IndexOf("\\updated\\") > -1) continue;
                 if (f.IndexOf("Infragistics.") > -1 && f.IndexOf(".xml") > -1 ) continue;
+                if (f.IndexOf(" defaultLoginer.xml") > -1) continue;
 
+              
                 FileInfo fi = new FileInfo(f);
                 ReleaseFileInfo file = new ReleaseFileInfo(f,f.Replace(this.txt_basedif.Text+"\\", ""), fi.Name, fi.LastWriteTime.Ticks);
                 newFileData.Add(file);
@@ -234,6 +236,8 @@ namespace LocalPublish
             if (step == 0) step = 1;
             foreach (ReleaseFileInfo fi in needUpdateFiles)
             {
+                if (fi.FileName.IndexOf(" defaultLoginer.xml") > -1) continue;
+
                 this.lbl_vertify.Text = "正在上傳 "+fi.FilePath+" ...";
                 System.Threading.Thread.Sleep(100);
                 ftp.SubRootCount = 0;
@@ -289,6 +293,7 @@ namespace LocalPublish
                 if (f.IndexOf("\\logs\\") > -1) continue;
                 if (f.IndexOf("\\data\\UserSet\\") > -1) continue;
                 if (f.IndexOf("Infragistics.") > -1 && f.IndexOf(".xml") > -1) continue;
+                if (f.IndexOf(" defaultLoginer.xml") > -1) continue;
                 FileInfo fi = new FileInfo(f);
                 ReleaseFileInfo file = new ReleaseFileInfo(f, f.Replace(this.txt_basedif.Text + "\\", ""), fi.Name, fi.LastWriteTime.Ticks);
                 newFileData.Add(file);
@@ -344,6 +349,11 @@ namespace LocalPublish
             this.lbl_vertify.Text = "驗證完成。";
         }
 
-     
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            if (stp.IsAlive) stp.Interrupt();
+            Application.DoEvents();
+            Application.Exit();
+        }
     }
 }

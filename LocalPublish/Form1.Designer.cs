@@ -139,7 +139,7 @@
             // 
             this.lbl_vertify.AutoSize = true;
             this.lbl_vertify.Font = new System.Drawing.Font("新細明體", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lbl_vertify.Location = new System.Drawing.Point(9, 77);
+            this.lbl_vertify.Location = new System.Drawing.Point(17, 119);
             this.lbl_vertify.Name = "lbl_vertify";
             this.lbl_vertify.Size = new System.Drawing.Size(0, 22);
             this.lbl_vertify.TabIndex = 8;
@@ -206,7 +206,7 @@
             // 
             // deletelast
             // 
-            this.deletelast.Location = new System.Drawing.Point(89, 66);
+            this.deletelast.Location = new System.Drawing.Point(89, 53);
             this.deletelast.Name = "deletelast";
             this.deletelast.Size = new System.Drawing.Size(217, 47);
             this.deletelast.TabIndex = 0;

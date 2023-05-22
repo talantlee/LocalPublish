@@ -44,6 +44,8 @@
             this.button5 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.deletelast = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -85,7 +87,7 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(914, 56);
+            this.panel1.Size = new System.Drawing.Size(891, 50);
             this.panel1.TabIndex = 3;
             // 
             // listView1
@@ -96,9 +98,9 @@
             this.columnHeader3});
             this.listView1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listView1.HideSelection = false;
-            this.listView1.Location = new System.Drawing.Point(0, 56);
+            this.listView1.Location = new System.Drawing.Point(0, 50);
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(914, 380);
+            this.listView1.Size = new System.Drawing.Size(891, 494);
             this.listView1.TabIndex = 4;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -119,16 +121,18 @@
             // 
             // panel2
             // 
+            this.panel2.Controls.Add(this.label1);
             this.panel2.Controls.Add(this.lbl_vertify);
             this.panel2.Controls.Add(this.button6);
             this.panel2.Controls.Add(this.progressBar1);
             this.panel2.Controls.Add(this.button5);
             this.panel2.Controls.Add(this.button4);
+            this.panel2.Controls.Add(this.deletelast);
             this.panel2.Controls.Add(this.button3);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel2.Location = new System.Drawing.Point(0, 436);
+            this.panel2.Location = new System.Drawing.Point(0, 544);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(914, 115);
+            this.panel2.Size = new System.Drawing.Size(891, 188);
             this.panel2.TabIndex = 5;
             // 
             // lbl_vertify
@@ -143,7 +147,7 @@
             // button6
             // 
             this.button6.BackColor = System.Drawing.SystemColors.Highlight;
-            this.button6.Location = new System.Drawing.Point(688, 44);
+            this.button6.Location = new System.Drawing.Point(558, 2);
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(103, 33);
             this.button6.TabIndex = 7;
@@ -154,15 +158,15 @@
             // progressBar1
             // 
             this.progressBar1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.progressBar1.Location = new System.Drawing.Point(0, 105);
+            this.progressBar1.Location = new System.Drawing.Point(0, 178);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(914, 10);
+            this.progressBar1.Size = new System.Drawing.Size(891, 10);
             this.progressBar1.TabIndex = 6;
             // 
             // button5
             // 
             this.button5.BackColor = System.Drawing.SystemColors.Highlight;
-            this.button5.Location = new System.Drawing.Point(688, 8);
+            this.button5.Location = new System.Drawing.Point(342, 2);
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(175, 33);
             this.button5.TabIndex = 2;
@@ -173,7 +177,7 @@
             // button4
             // 
             this.button4.BackColor = System.Drawing.SystemColors.Highlight;
-            this.button4.Location = new System.Drawing.Point(528, 8);
+            this.button4.Location = new System.Drawing.Point(182, 2);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(144, 33);
             this.button4.TabIndex = 0;
@@ -183,7 +187,7 @@
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(435, 9);
+            this.button3.Location = new System.Drawing.Point(89, 3);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(75, 33);
             this.button3.TabIndex = 0;
@@ -191,11 +195,30 @@
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(19, 9);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(41, 12);
+            this.label1.TabIndex = 9;
+            this.label1.Text = "新版本";
+            // 
+            // deletelast
+            // 
+            this.deletelast.Location = new System.Drawing.Point(89, 66);
+            this.deletelast.Name = "deletelast";
+            this.deletelast.Size = new System.Drawing.Size(217, 47);
+            this.deletelast.TabIndex = 0;
+            this.deletelast.Text = "刪除最後一個未onlined的版本資料";
+            this.deletelast.UseVisualStyleBackColor = true;
+            this.deletelast.Click += new System.EventHandler(this.deletelast_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(914, 551);
+            this.ClientSize = new System.Drawing.Size(891, 732);
             this.Controls.Add(this.listView1);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
@@ -229,6 +252,8 @@
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Button button6;
         private System.Windows.Forms.Label lbl_vertify;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button deletelast;
     }
 }
 

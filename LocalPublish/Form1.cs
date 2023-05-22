@@ -22,7 +22,7 @@ namespace LocalPublish
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            this.txt_basedif.Text = System.Configuration.ConfigurationManager.AppSettings.Get("ClientPublishDir");      
+            this.txt_basedif.Text = System.Configuration.ConfigurationManager.AppSettings.Get("ClientPublishDir");
         }
 
         public void SaveConfig()
@@ -34,7 +34,8 @@ namespace LocalPublish
                 config.AppSettings.Settings.Add("ClientPublishDir", this.txt_basedif.Text); ;
                 config.Save(ConfigurationSaveMode.Modified);//保存
                 ConfigurationManager.RefreshSection("appSettings");//刷新（防止已读入内存）
-            }else
+            }
+            else
             {
                 config.AppSettings.Settings["ClientPublishDir"].Value = this.txt_basedif.Text;
                 config.Save(ConfigurationSaveMode.Modified);//保存
@@ -63,17 +64,17 @@ namespace LocalPublish
         {
             SqlHelper db = DatabaseFactory.CreateDatabase();
 
-            string sqlCommand = "select * from AssemblyInfo order by fileDate desc;";
+            string sqlCommand = "";
 
-            sqlCommand= "select Max(Version) from versions where islivied = 1 ";
-           
-             currentVersion = db.ExecuteScalarSqlString(sqlCommand).ToString();
+            sqlCommand = "select Max(Version) from versions where isLive = 1 ";
+
+            currentVersion = db.ExecuteScalarSqlString(sqlCommand).ToString();
             this.lbl_vertify.Text = $"當前版本號為：{currentVersion}";
             sqlCommand = "select * from AssemblyInfo order by fileDate desc;";
 
-            DataTable olddata= db.ExecuteDatasetSqlString(sqlCommand).Tables[0];
-            string[] newFileList=  System.IO.Directory.GetFiles(this.txt_basedif.Text, "*.*", System.IO.SearchOption.AllDirectories);
-         
+            DataTable olddata = db.ExecuteDatasetSqlString(sqlCommand).Tables[0];
+            string[] newFileList = System.IO.Directory.GetFiles(this.txt_basedif.Text, "*.*", System.IO.SearchOption.AllDirectories);
+
             this.listView1.Items.Clear();
 
             List<ReleaseFileInfo> newFileData = new List<ReleaseFileInfo>();
@@ -82,28 +83,32 @@ namespace LocalPublish
                 if (f.IndexOf(".pdb") > -1) continue;
                 if (f.IndexOf(".scc") > -1) continue;
                 if (f.IndexOf(".db") > -1) continue;
+                if (f.IndexOf("\\ref\\") > -1) continue;
                 if (f.IndexOf("\\logs\\") > -1) continue;
+                if (f.IndexOf("\\runtimes\\") > -1) continue;
+
                 if (f.IndexOf("\\data\\UserSet\\") > -1) continue;
                 if (f.IndexOf("\\updated\\") > -1) continue;
-                if (f.IndexOf("Infragistics.") > -1 && f.IndexOf(".xml") > -1 ) continue;
+                if (f.IndexOf("Infragistics.") > -1 && f.IndexOf(".xml") > -1) continue;
                 if (f.IndexOf(" defaultLoginer.xml") > -1) continue;
 
-              
+                if (f.StartsWith("Update.")) continue;
+
                 FileInfo fi = new FileInfo(f);
-                ReleaseFileInfo file = new ReleaseFileInfo(f,f.Replace(this.txt_basedif.Text+"\\", ""), fi.Name, fi.LastWriteTime.Ticks);
+                ReleaseFileInfo file = new ReleaseFileInfo(f, f.Replace(this.txt_basedif.Text + "\\", ""), fi.Name, fi.LastWriteTime.Ticks);
                 newFileData.Add(file);
-             
+
             }
-             needUpdateFiles = new List<ReleaseFileInfo>();
+            needUpdateFiles = new List<ReleaseFileInfo>();
             foreach (ReleaseFileInfo fi in newFileData)
             {
                 bool isFined = false;
-                foreach(DataRow dr in olddata.Rows)
+                foreach (DataRow dr in olddata.Rows)
                 {
                     if (dr["AssemblyPath"].ToString().Equals(fi.FilePath, StringComparison.OrdinalIgnoreCase))
                     {
-                       
-                        if (Convert.ToInt64(dr["FileDate"])==fi.FileDate)
+
+                        if (Convert.ToInt64(dr["FileDate"]) == fi.FileDate)
                         {
                             isFined = true;
                         }
@@ -113,7 +118,7 @@ namespace LocalPublish
                 if (!isFined)
                 {
                     needUpdateFiles.Add(fi);
-                  
+
                 }
             }
             foreach (DataRow dr in olddata.Rows)
@@ -130,7 +135,7 @@ namespace LocalPublish
                 }
                 if (!isFined)
                 {
-                    ReleaseFileInfo file = new ReleaseFileInfo(this.txt_basedif.Text + "\\"+dr["AssemblyPath"].ToString(),dr["AssemblyPath"].ToString(), dr["AssemblyName"].ToString(), Convert.ToInt64(dr["FileDate"]));
+                    ReleaseFileInfo file = new ReleaseFileInfo(this.txt_basedif.Text + "\\" + dr["AssemblyPath"].ToString(), dr["AssemblyPath"].ToString(), dr["AssemblyName"].ToString(), Convert.ToInt64(dr["FileDate"]));
                     file.isDeleted = true;
                     needUpdateFiles.Add(file);
                     // this.listView1.Items.Add(new ListViewItem(new string[] { fi.FileName, fi.FileDate.ToString() }));
@@ -138,14 +143,14 @@ namespace LocalPublish
             }
             foreach (ReleaseFileInfo fi in needUpdateFiles)
             {
-                this.listView1.Items.Add(new ListViewItem(new string[] { fi.FilePath, fi.FileDate.ToString(),fi.isDeleted?"delete":"change" }));
+                this.listView1.Items.Add(new ListViewItem(new string[] { fi.FilePath, fi.FileDate.ToString(), fi.isDeleted ? "delete" : "change" }));
             }
             if (needUpdateFiles.Count == 0)
             {
                 this.lbl_vertify.Text = "已經是最新版本。";
             }
-                //       SYS_GetNeedUpdateFiles  return db.ExecuteDatasetSqlString(sqlCommand).Tables[0];
-            }
+            //       SYS_GetNeedUpdateFiles  return db.ExecuteDatasetSqlString(sqlCommand).Tables[0];
+        }
 
         public class ReleaseFileInfo
         {
@@ -155,7 +160,7 @@ namespace LocalPublish
             public long FileDate { get; set; }
 
             public bool isDeleted { get; set; }
-            public ReleaseFileInfo(string fullpath,string fpath,string fname,long fdate)
+            public ReleaseFileInfo(string fullpath, string fpath, string fname, long fdate)
             {
                 FilePath = fpath;
                 FileName = fname;
@@ -181,19 +186,19 @@ namespace LocalPublish
                         {
                             foreach (ReleaseFileInfo fi in needUpdateFiles)
                             {
-                                object[] para = { "new",fi.FileName, fi.FilePath,fi.FileDate,fi.isDeleted };
+                                object[] para = { "new", fi.FileName, fi.FilePath, fi.FileDate, fi.isDeleted };
                                 db.ExecuteNonQuery(tran, "SYS_AddNeedUpdateFile", para).ToString();
-                                if(this.progressBar1.Value<98)
-                                this.progressBar1.Value += 1;
+                                if (this.progressBar1.Value < 98)
+                                    this.progressBar1.Value += 1;
                             }
 
-                          string  newVsersion= db.ExecuteScalar(tran, "SYS_RefreshUpdateVersion", currentVersion).ToString();
+                            string newVsersion = db.ExecuteScalar(tran, "SYS_RefreshUpdateVersion", currentVersion).ToString();
 
-                           this.lbl_vertify.Text = this.lbl_vertify.Text = $"已經更新，當前版本號為：{newVsersion}";
+                            this.lbl_vertify.Text = this.lbl_vertify.Text = $"已經更新，當前版本號為：{newVsersion}";
 
 
-                          tran.Commit();
-                          this.progressBar1.Value = 100;
+                            tran.Commit();
+                            this.progressBar1.Value = 100;
                         }
                         catch (Exception ex)
                         {
@@ -238,7 +243,7 @@ namespace LocalPublish
             {
                 if (fi.FileName.IndexOf(" defaultLoginer.xml") > -1) continue;
 
-                this.lbl_vertify.Text = "正在上傳 "+fi.FilePath+" ...";
+                this.lbl_vertify.Text = "正在上傳 " + fi.FilePath + " ...";
                 System.Threading.Thread.Sleep(100);
                 ftp.SubRootCount = 0;
                 if (fi.FilePath.IndexOf("\\") > -1)
@@ -280,7 +285,7 @@ namespace LocalPublish
 
         private void Compair()
         {
-          
+
             FtpClient ftp = new FtpClient("172.16.1.43", "tempftp", "tempftp123");
             //ftp.get
             string[] newFileList = System.IO.Directory.GetFiles(this.txt_basedif.Text, "*.*", System.IO.SearchOption.AllDirectories);
@@ -291,9 +296,12 @@ namespace LocalPublish
                 if (f.IndexOf(".scc") > -1) continue;
                 if (f.IndexOf(".db") > -1) continue;
                 if (f.IndexOf("\\logs\\") > -1) continue;
+                if (f.IndexOf("\\ref\\") > -1) continue;
+                if (f.IndexOf("\\runtimes\\") > -1) continue;
                 if (f.IndexOf("\\data\\UserSet\\") > -1) continue;
                 if (f.IndexOf("Infragistics.") > -1 && f.IndexOf(".xml") > -1) continue;
                 if (f.IndexOf(" defaultLoginer.xml") > -1) continue;
+                if (f.StartsWith("Update.")) continue;
                 FileInfo fi = new FileInfo(f);
                 ReleaseFileInfo file = new ReleaseFileInfo(f, f.Replace(this.txt_basedif.Text + "\\", ""), fi.Name, fi.LastWriteTime.Ticks);
                 newFileData.Add(file);
@@ -351,9 +359,29 @@ namespace LocalPublish
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            if (stp.IsAlive) stp.Interrupt();
+            if (stp != null)
+            {
+                if (stp.IsAlive) stp.Interrupt();
+            }
             Application.DoEvents();
             Application.Exit();
         }
+
+
+
+        private void deletelast_Click(object sender, EventArgs e)
+        {
+            SqlHelper db = DatabaseFactory.CreateDatabase();
+
+            string sqlCommand = "";
+            if (MessageBox.Show("確定要刪除嗎？", "Alert", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+
+                sqlCommand = "declare @ver varchar(30);select @ver=Max(Version) from versions where isLive = 0;delete from versions where isLive = 0 and [Version]=@ver;if @@rowcount>0 delete AssemblyInfo where [Versions]=@ver;   ";
+                db.ExecuteNonQuerySqlString(sqlCommand).ToString();
+                MessageBox.Show("刪除成功");
+            }
+        }
+
     }
 }

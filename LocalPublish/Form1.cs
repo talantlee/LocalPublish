@@ -220,8 +220,7 @@ namespace LocalPublish
 
         private void button5_Click(object sender, EventArgs e)
         {
-            UploadToServer();
-            return;
+         
             if (stp != null)
             {
                 if (stp.IsAlive)

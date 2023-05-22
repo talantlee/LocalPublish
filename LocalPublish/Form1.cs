@@ -220,6 +220,8 @@ namespace LocalPublish
 
         private void button5_Click(object sender, EventArgs e)
         {
+            UploadToServer();
+            return;
             if (stp != null)
             {
                 if (stp.IsAlive)
@@ -233,7 +235,7 @@ namespace LocalPublish
         public void UploadToServer()
         {
 
-            FtpClient ftp = new FtpClient("172.16.1.43", "tempftp", "tempftp123");
+            FtpClient ftp = new FtpClient("172.16.1.43", "erpftp", "erpftp123");
             this.progressBar1.Value = 0;
             int step = 100;
             if (needUpdateFiles.Count > 0)
@@ -286,7 +288,7 @@ namespace LocalPublish
         private void Compair()
         {
 
-            FtpClient ftp = new FtpClient("172.16.1.43", "tempftp", "tempftp123");
+            FtpClient ftp = new FtpClient("172.16.1.43", "erpftp", "erpftp123");
             //ftp.get
             string[] newFileList = System.IO.Directory.GetFiles(this.txt_basedif.Text, "*.*", System.IO.SearchOption.AllDirectories);
             List<ReleaseFileInfo> newFileData = new List<ReleaseFileInfo>();

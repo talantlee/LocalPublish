@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace LocalPublish
 {
@@ -86,13 +87,19 @@ namespace LocalPublish
                 if (f.IndexOf("\\ref\\") > -1) continue;
                 if (f.IndexOf("\\logs\\") > -1) continue;
                 if (f.IndexOf("\\runtimes\\") > -1) continue;
+                if (f.IndexOf("\\StartUp.exe.WebView2\\") > -1) continue;
+                if (f.IndexOf("\\NMERP.exe.WebView2\\") > -1) continue;
+ 
 
+                if (f.IndexOf("\\WebView2Data\\EBWebView\\") > -1) continue;
+                if (f.IndexOf("\\WebView2Data\\tempfiles\\") > -1) continue;
+                
                 if (f.IndexOf("\\data\\UserSet\\") > -1) continue;
                 if (f.IndexOf("\\updated\\") > -1) continue;
                 if (f.IndexOf("Infragistics.") > -1 && f.IndexOf(".xml") > -1) continue;
-                if (f.IndexOf(" defaultLoginer.xml") > -1) continue;
+                if (f.IndexOf("defaultLoginer.xml") > -1) continue;
 
-                if (f.StartsWith("Update.")) continue;
+                if (f.StartsWith("ErpUpdate.")) continue;
 
                 FileInfo fi = new FileInfo(f);
                 ReleaseFileInfo file = new ReleaseFileInfo(f, f.Replace(this.txt_basedif.Text + "\\", ""), fi.Name, fi.LastWriteTime.Ticks);
@@ -174,7 +181,7 @@ namespace LocalPublish
         {
             if (needUpdateFiles.Count > 0)
             {
-                if (MessageBox.Show("確定要發佈新版本嗎？") == DialogResult.OK)
+                if (MessageBox.Show("確定要發佈新版本嗎？","Tips",MessageBoxButtons.OKCancel) == DialogResult.OK)
                 {
                     this.progressBar1.Value = 0;
                     SqlHelper db = DatabaseFactory.CreateDatabase();
@@ -184,15 +191,22 @@ namespace LocalPublish
                         IDbTransaction tran = connection.BeginTransaction();
                         try
                         {
+                            string newVsersion = db.ExecuteScalar(tran, "Versions_Edit", 0,"","mis","N","updates").ToString();
+                            if (newVsersion == "-1")
+                            {
+                                MessageBox.Show("已經有一個版本未上線，請先上線上一個版本 或 刪除上一個未上線版本，再繼續發佈新版。");
+                                return;
+                            }
+
                             foreach (ReleaseFileInfo fi in needUpdateFiles)
                             {
-                                object[] para = { "new", fi.FileName, fi.FilePath, fi.FileDate, fi.isDeleted };
+                                object[] para = { newVsersion, fi.FileName, fi.FilePath, fi.FileDate, fi.isDeleted };
                                 db.ExecuteNonQuery(tran, "SYS_AddNeedUpdateFile", para).ToString();
                                 if (this.progressBar1.Value < 98)
                                     this.progressBar1.Value += 1;
                             }
 
-                            string newVsersion = db.ExecuteScalar(tran, "SYS_RefreshUpdateVersion", currentVersion).ToString();
+                         
 
                             this.lbl_vertify.Text = this.lbl_vertify.Text = $"已經更新，當前版本號為：{newVsersion}";
 
@@ -226,46 +240,47 @@ namespace LocalPublish
                 if (stp.IsAlive)
                     stp.Abort();
             }
-            stp = new System.Threading.Thread(new System.Threading.ThreadStart(UploadToServer));
-            stp.Start();
-
-        }
-
-        public void UploadToServer()
-        {
-
-            FtpClient ftp = new FtpClient("172.16.1.43", "erpftp", "erpftp123");
             this.progressBar1.Value = 0;
-            int step = 100;
-            if (needUpdateFiles.Count > 0)
-                step = 100 / needUpdateFiles.Count;
-            if (step == 0) step = 1;
-            foreach (ReleaseFileInfo fi in needUpdateFiles)
-            {
-                if (fi.FileName.IndexOf(" defaultLoginer.xml") > -1) continue;
+         ///   stp = new System.Threading.Thread(new System.Threading.ThreadStart(UploadToServer));
+          //  stp.Start();
 
-                this.lbl_vertify.Text = "正在上傳 " + fi.FilePath + " ...";
-                System.Threading.Thread.Sleep(100);
-                ftp.SubRootCount = 0;
-                if (fi.FilePath.IndexOf("\\") > -1)
-                {
-
-                    ftp.PureUploadSub(fi.TrueFilePath, fi.FilePath);
-                }
-                else
-                {
-                    ftp.Upload(fi.TrueFilePath);
-                }
-                for (int i = 0; i < ftp.SubRootCount; i++)
-                {
-                    ftp.ChangeDir("..");
-                }
-                if (this.progressBar1.Value < 98)
-                    this.progressBar1.Value += step;
-            }
-            progressBar1.Value = 100;
-            this.lbl_vertify.Text = "上傳完成。";
         }
+
+        //public void UploadToServer()
+        //{
+
+        //    FtpClient ftp = new FtpClient("192.168.88.53", "NMErpUpdate", "Nien123ErpUp");
+          
+        //    int step = 100;
+        //    if (needUpdateFiles.Count > 0)
+        //        step = 100 / needUpdateFiles.Count;
+        //    if (step == 0) step = 1;
+        //    foreach (ReleaseFileInfo fi in needUpdateFiles)
+        //    {
+        //        if (fi.FileName.IndexOf("defaultLoginer.xml") > -1) continue;
+
+        //    //    this.lbl_vertify.Text = "正在上傳 " + fi.FilePath + " ...";
+        //        System.Threading.Thread.Sleep(100);
+        //        ftp.SubRootCount = 0;
+        //        if (fi.FilePath.IndexOf("\\") > -1)
+        //        {
+
+        //            ftp.PureUploadSub(fi.TrueFilePath, fi.FilePath);
+        //        }
+        //        else
+        //        {
+        //            ftp.Upload(fi.TrueFilePath);
+        //        }
+        //        for (int i = 0; i < ftp.SubRootCount; i++)
+        //        {
+        //            ftp.ChangeDir("..");
+        //        }
+        //       // if (this.progressBar1.Value < 98)
+        //        //   this.progressBar1.Value += step;
+        //    }
+        // //   progressBar1.Value = 100;
+        // //   this.lbl_vertify.Text = "上傳完成。";
+        //}
 
 
         System.Threading.Thread stp = null;
@@ -287,7 +302,7 @@ namespace LocalPublish
         private void Compair()
         {
 
-            FtpClient ftp = new FtpClient("172.16.1.43", "erpftp", "erpftp123");
+         //   FtpClient ftp = new FtpClient("192.168.88.53", "NMErpUpdate", "Nien123ErpUp");
             //ftp.get
             string[] newFileList = System.IO.Directory.GetFiles(this.txt_basedif.Text, "*.*", System.IO.SearchOption.AllDirectories);
             List<ReleaseFileInfo> newFileData = new List<ReleaseFileInfo>();
@@ -302,7 +317,7 @@ namespace LocalPublish
                 if (f.IndexOf("\\data\\UserSet\\") > -1) continue;
                 if (f.IndexOf("Infragistics.") > -1 && f.IndexOf(".xml") > -1) continue;
                 if (f.IndexOf(" defaultLoginer.xml") > -1) continue;
-                if (f.StartsWith("Update.")) continue;
+                if (f.StartsWith("ErpUpdate.")) continue;
                 FileInfo fi = new FileInfo(f);
                 ReleaseFileInfo file = new ReleaseFileInfo(f, f.Replace(this.txt_basedif.Text + "\\", ""), fi.Name, fi.LastWriteTime.Ticks);
                 newFileData.Add(file);
@@ -322,7 +337,7 @@ namespace LocalPublish
                 long serversize = 0;
                 try
                 {
-                    serversize = ftp.GetFileSize(fi.FilePath);
+                    //serversize = ftp.GetFileSize(fi.FilePath);
                 }
                 catch
                 {
@@ -335,20 +350,7 @@ namespace LocalPublish
                     System.Threading.Thread.Sleep(1000);
                     this.lbl_vertify.Text = fi.FilePath + " 文件不匹配，正在重新上傳...";
                     System.Threading.Thread.Sleep(2000);
-                    ftp.SubRootCount = 0;
-                    if (fi.FilePath.IndexOf("\\") > -1)
-                    {
-
-                        ftp.PureUploadSub(fi.TrueFilePath, fi.FilePath);
-                    }
-                    else
-                    {
-                        ftp.Upload(fi.TrueFilePath);
-                    }
-                    for (int i = 0; i < ftp.SubRootCount; i++)
-                    {
-                        ftp.ChangeDir("..");
-                    }
+                  
                 }
                 if (this.progressBar1.Value < 98)
                     this.progressBar1.Value += step;
@@ -384,5 +386,6 @@ namespace LocalPublish
             }
         }
 
+    
     }
 }

@@ -38,14 +38,13 @@
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.panel2 = new System.Windows.Forms.Panel();
+            this.label1 = new System.Windows.Forms.Label();
             this.lbl_vertify = new System.Windows.Forms.Label();
             this.button6 = new System.Windows.Forms.Button();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
-            this.button5 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
             this.deletelast = new System.Windows.Forms.Button();
+            this.button3 = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -125,7 +124,6 @@
             this.panel2.Controls.Add(this.lbl_vertify);
             this.panel2.Controls.Add(this.button6);
             this.panel2.Controls.Add(this.progressBar1);
-            this.panel2.Controls.Add(this.button5);
             this.panel2.Controls.Add(this.button4);
             this.panel2.Controls.Add(this.deletelast);
             this.panel2.Controls.Add(this.button3);
@@ -134,6 +132,15 @@
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(891, 188);
             this.panel2.TabIndex = 5;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(19, 9);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(41, 12);
+            this.label1.TabIndex = 9;
+            this.label1.Text = "新版本";
             // 
             // lbl_vertify
             // 
@@ -147,11 +154,11 @@
             // button6
             // 
             this.button6.BackColor = System.Drawing.SystemColors.Highlight;
-            this.button6.Location = new System.Drawing.Point(558, 2);
+            this.button6.Location = new System.Drawing.Point(354, 2);
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(103, 33);
             this.button6.TabIndex = 7;
-            this.button6.Text = "3.Vertify Version";
+            this.button6.Text = "2.Vertify Version";
             this.button6.UseVisualStyleBackColor = false;
             this.button6.Click += new System.EventHandler(this.button6_Click);
             // 
@@ -162,17 +169,6 @@
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(891, 10);
             this.progressBar1.TabIndex = 6;
-            // 
-            // button5
-            // 
-            this.button5.BackColor = System.Drawing.SystemColors.Highlight;
-            this.button5.Location = new System.Drawing.Point(342, 2);
-            this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(175, 33);
-            this.button5.TabIndex = 2;
-            this.button5.Text = "2.Publish laterest Version To FTP";
-            this.button5.UseVisualStyleBackColor = false;
-            this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
             // button4
             // 
@@ -185,6 +181,16 @@
             this.button4.UseVisualStyleBackColor = false;
             this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
+            // deletelast
+            // 
+            this.deletelast.Location = new System.Drawing.Point(89, 53);
+            this.deletelast.Name = "deletelast";
+            this.deletelast.Size = new System.Drawing.Size(217, 47);
+            this.deletelast.TabIndex = 0;
+            this.deletelast.Text = "回滾上一個onlined的版本資料";
+            this.deletelast.UseVisualStyleBackColor = true;
+            this.deletelast.Click += new System.EventHandler(this.deletelast_Click);
+            // 
             // button3
             // 
             this.button3.Location = new System.Drawing.Point(89, 3);
@@ -195,25 +201,6 @@
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(19, 9);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(41, 12);
-            this.label1.TabIndex = 9;
-            this.label1.Text = "新版本";
-            // 
-            // deletelast
-            // 
-            this.deletelast.Location = new System.Drawing.Point(89, 53);
-            this.deletelast.Name = "deletelast";
-            this.deletelast.Size = new System.Drawing.Size(217, 47);
-            this.deletelast.TabIndex = 0;
-            this.deletelast.Text = "刪除最後一個未onlined的版本資料";
-            this.deletelast.UseVisualStyleBackColor = true;
-            this.deletelast.Click += new System.EventHandler(this.deletelast_Click);
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -223,7 +210,7 @@
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "發佈器";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.panel1.ResumeLayout(false);
@@ -248,7 +235,6 @@
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.ColumnHeader columnHeader3;
-        private System.Windows.Forms.Button button5;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Button button6;
         private System.Windows.Forms.Label lbl_vertify;

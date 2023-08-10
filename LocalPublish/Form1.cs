@@ -191,7 +191,7 @@ namespace LocalPublish
                         IDbTransaction tran = connection.BeginTransaction();
                         try
                         {
-                            string newVsersion = db.ExecuteScalar(tran, "Versions_Edit", 0,"","mis","N","updates").ToString();
+                            string newVsersion = db.ExecuteScalar(tran, "Versions_Edit", 0,"發佈器自動產生","mis","N","updates").ToString();
                             if (newVsersion == "-1")
                             {
                                 MessageBox.Show("已經有一個版本未上線，請先上線上一個版本 或 刪除上一個未上線版本，再繼續發佈新版。");

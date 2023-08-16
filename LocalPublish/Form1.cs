@@ -86,7 +86,14 @@ namespace LocalPublish
                 if (f.IndexOf(".db") > -1) continue;
                 if (f.IndexOf("\\ref\\") > -1) continue;
                 if (f.IndexOf("\\logs\\") > -1) continue;
-                if (f.IndexOf("\\runtimes\\") > -1) continue;
+             //   if (f.IndexOf("\\runtimes\\") > -1) {
+
+                    //win-x64,win-x86,win-arm64,
+                //    continue;
+             //   }
+
+
+             
                 if (f.IndexOf("\\StartUp.exe.WebView2\\") > -1) continue;
                 if (f.IndexOf("\\NMERP.exe.WebView2\\") > -1) continue;
  
@@ -301,8 +308,10 @@ namespace LocalPublish
 
         private void Compair()
         {
+            this.lbl_vertify.Text = "暫時不需要驗證功能。";
+            return;
 
-         //   FtpClient ftp = new FtpClient("192.168.88.53", "NMErpUpdate", "Nien123ErpUp");
+            //   FtpClient ftp = new FtpClient("192.168.88.53", "NMErpUpdate", "Nien123ErpUp");
             //ftp.get
             string[] newFileList = System.IO.Directory.GetFiles(this.txt_basedif.Text, "*.*", System.IO.SearchOption.AllDirectories);
             List<ReleaseFileInfo> newFileData = new List<ReleaseFileInfo>();

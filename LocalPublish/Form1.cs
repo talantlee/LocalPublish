@@ -24,6 +24,7 @@ namespace LocalPublish
         private void Form1_Load(object sender, EventArgs e)
         {
             this.txt_basedif.Text = System.Configuration.ConfigurationManager.AppSettings.Get("ClientPublishDir");
+
         }
 
         public void SaveConfig()

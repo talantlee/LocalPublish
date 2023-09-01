@@ -18,8 +18,13 @@ namespace LocalPublish
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             SqlHelper.DbConnectionStrings = new Dictionary<string, string>();
-            SqlHelper.DbConnectionStrings.Add("sysdata", "Data Source=192.168.88.53;Initial Catalog=SysData;user id=mis002;password=dongguan;Connect Timeout=90;");
-            SqlHelper.DbConnectionStrings.Add("default", "Data Source=192.168.88.53;Initial Catalog=SysData;user id=mis002;password=dongguan;Connect Timeout=90;");
+            //    SqlHelper.DbConnectionStrings.Add("sysdata", "Data Source=192.168.88.53;Initial Catalog=SysData;user id=mis002;password=dongguan;Connect Timeout=90;");
+            for(int i=0;i< System.Configuration.ConfigurationManager.ConnectionStrings.Count; i++)
+            {
+                SqlHelper.DbConnectionStrings.Add(System.Configuration.ConfigurationManager.ConnectionStrings[i].Name, System.Configuration.ConfigurationManager.ConnectionStrings[i].ConnectionString);
+            }
+        
+           // SqlHelper.DbConnectionStrings.Add("default", "Data Source=192.168.88.53;Initial Catalog=SysData;user id=mis002;password=dongguan;Connect Timeout=90;");
             Application.Run(new Form1());
         }
     }

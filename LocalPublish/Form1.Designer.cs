@@ -43,8 +43,8 @@
             this.button6 = new System.Windows.Forms.Button();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.button4 = new System.Windows.Forms.Button();
-            this.deletelast = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
+            this.button5 = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -124,8 +124,8 @@
             this.panel2.Controls.Add(this.lbl_vertify);
             this.panel2.Controls.Add(this.button6);
             this.panel2.Controls.Add(this.progressBar1);
+            this.panel2.Controls.Add(this.button5);
             this.panel2.Controls.Add(this.button4);
-            this.panel2.Controls.Add(this.deletelast);
             this.panel2.Controls.Add(this.button3);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel2.Location = new System.Drawing.Point(0, 544);
@@ -154,12 +154,13 @@
             // button6
             // 
             this.button6.BackColor = System.Drawing.SystemColors.Highlight;
-            this.button6.Location = new System.Drawing.Point(354, 2);
+            this.button6.Location = new System.Drawing.Point(182, 87);
             this.button6.Name = "button6";
-            this.button6.Size = new System.Drawing.Size(103, 33);
+            this.button6.Size = new System.Drawing.Size(247, 33);
             this.button6.TabIndex = 7;
-            this.button6.Text = "2.Vertify Version";
+            this.button6.Text = "2.Upload to FTP Update Server";
             this.button6.UseVisualStyleBackColor = false;
+            this.button6.Visible = false;
             this.button6.Click += new System.EventHandler(this.button6_Click);
             // 
             // progressBar1
@@ -177,19 +178,9 @@
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(144, 33);
             this.button4.TabIndex = 0;
-            this.button4.Text = "1.Publish Version To DB";
+            this.button4.Text = "Produre Version Data";
             this.button4.UseVisualStyleBackColor = false;
             this.button4.Click += new System.EventHandler(this.button4_Click);
-            // 
-            // deletelast
-            // 
-            this.deletelast.Location = new System.Drawing.Point(89, 53);
-            this.deletelast.Name = "deletelast";
-            this.deletelast.Size = new System.Drawing.Size(217, 47);
-            this.deletelast.TabIndex = 0;
-            this.deletelast.Text = "回滾上一個onlined的版本資料";
-            this.deletelast.UseVisualStyleBackColor = true;
-            this.deletelast.Click += new System.EventHandler(this.deletelast_Click);
             // 
             // button3
             // 
@@ -200,6 +191,17 @@
             this.button3.Text = "Compair";
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
+            // button5
+            // 
+            this.button5.BackColor = System.Drawing.SystemColors.Highlight;
+            this.button5.Location = new System.Drawing.Point(336, 3);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(144, 33);
+            this.button5.TabIndex = 0;
+            this.button5.Text = "Publish";
+            this.button5.UseVisualStyleBackColor = false;
+            this.button5.Click += new System.EventHandler(this.button5_Click_1);
             // 
             // Form1
             // 
@@ -239,7 +241,7 @@
         private System.Windows.Forms.Button button6;
         private System.Windows.Forms.Label lbl_vertify;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button deletelast;
+        private System.Windows.Forms.Button button5;
     }
 }
 

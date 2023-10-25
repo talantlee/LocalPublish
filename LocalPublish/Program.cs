@@ -23,8 +23,12 @@ namespace LocalPublish
             {
                 SqlHelper.DbConnectionStrings.Add(System.Configuration.ConfigurationManager.ConnectionStrings[i].Name, System.Configuration.ConfigurationManager.ConnectionStrings[i].ConnectionString);
             }
-        
-           // SqlHelper.DbConnectionStrings.Add("default", "Data Source=192.168.88.53;Initial Catalog=SysData;user id=mis002;password=dongguan;Connect Timeout=90;");
+
+           // AppConfig.BinPath = System.Configuration.ConfigurationManager.AppSettings.Get("BinPath");
+            AppConfig.HostServer = System.Configuration.ConfigurationManager.AppSettings.Get("HostServer");
+            AppConfig.ServiceId = System.Configuration.ConfigurationManager.AppSettings.Get("ServiceId");
+            AppConfig.ClusterId = System.Configuration.ConfigurationManager.AppSettings.Get("ClusterId");
+            // SqlHelper.DbConnectionStrings.Add("default", "Data Source=192.168.88.53;Initial Catalog=SysData;user id=mis002;password=dongguan;Connect Timeout=90;");
             Application.Run(new Form1());
         }
     }

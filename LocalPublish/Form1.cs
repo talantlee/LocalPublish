@@ -1,4 +1,8 @@
 ﻿using DataAccessLayers;
+using FluentFTP;
+using Microsoft.Extensions.Hosting;
+using Orleans.Configuration;
+using Orleans;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,7 +15,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-
+using BusinessFacade;
+using BusinessEntity;
 namespace LocalPublish
 {
     public partial class Form1 : Form
@@ -64,6 +69,7 @@ namespace LocalPublish
         List<ReleaseFileInfo> needUpdateFiles = new List<ReleaseFileInfo>();
         private void button3_Click(object sender, EventArgs e)
         {
+            BroadcastAutoId = 0;
             SqlHelper db = DatabaseFactory.CreateDatabase();
 
             string sqlCommand = "";
@@ -184,42 +190,56 @@ namespace LocalPublish
                 TrueFilePath = fullpath;
             }
         }
-
+        int BroadcastAutoId = 0;
         private void button4_Click(object sender, EventArgs e)
         {
+           
             if (needUpdateFiles.Count > 0)
             {
+                BroadcastAutoId = 0;
                 if (MessageBox.Show("確定要發佈新版本嗎？","Tips",MessageBoxButtons.OKCancel) == DialogResult.OK)
                 {
                     this.progressBar1.Value = 0;
                     SqlHelper db = DatabaseFactory.CreateDatabase();
+                   
+                    string newVsersion = string.Empty;
                     using (IDbConnection connection = db.GetConnection())
                     {
                         connection.Open();
                         IDbTransaction tran = connection.BeginTransaction();
                         try
                         {
-                            string newVsersion = db.ExecuteScalar(tran, "Versions_Edit", 0,"發佈器自動產生","mis","N","updates").ToString();
+                            newVsersion = db.ExecuteScalar(tran, "Versions_Edit", 0,"發佈器自動產生","mis","N","updates").ToString();
                             if (newVsersion == "-1")
                             {
                                 MessageBox.Show("已經有一個版本未上線，請先上線上一個版本 或 刪除上一個未上線版本，再繼續發佈新版。");
                                 return;
                             }
-
+                          
                             foreach (ReleaseFileInfo fi in needUpdateFiles)
                             {
                                 object[] para = { newVsersion, fi.FileName, fi.FilePath, fi.FileDate, fi.isDeleted };
                                 db.ExecuteNonQuery(tran, "SYS_AddNeedUpdateFile", para).ToString();
                                 if (this.progressBar1.Value < 98)
                                     this.progressBar1.Value += 1;
+                                //FTP
+                             
                             }
 
-                         
-
-                            this.lbl_vertify.Text = this.lbl_vertify.Text = $"已經更新，當前版本號為：{newVsersion}";
-
-
+                            BroadcastAutoId = Convert.ToInt32(db.ExecuteScalar(tran, "Broadcast_Edit", 0, newVsersion, "Upgrade", "", "ALL", "Admin", "N", "updates"));
                             tran.Commit();
+                             this.lbl_vertify.Text = $"已經成功產生版本號： {BroadcastAutoId}的數據。";
+                            //this.progressBar1.Value = 1;
+                            //if (UploadFiles("192.168.88.53", "NMErpUpdate", "Nien123ErpUp", needUpdateFiles))
+                            //{
+                            //    this.lbl_vertify.Text = this.lbl_vertify.Text = $"已經更新，當前版本號為：{newVsersion}";
+                            //    tran.Commit();
+                            //}
+                            //else
+                            //{
+                            //    tran.Rollback();
+                            //}
+
                             this.progressBar1.Value = 100;
                         }
                         catch (Exception ex)
@@ -293,9 +313,14 @@ namespace LocalPublish
 
         System.Threading.Thread stp = null;
         private int CompairFileCount = 0;
-        private void button6_Click(object sender, EventArgs e)
+        private async void button6_Click(object sender, EventArgs e)
         {
+           
+            //BroadcastAutoId = Convert.ToInt32(db.ExecuteScalar(tran, "Broadcast_Edit", 0, newVsersion, "Upgrade", "", "ALL", "Admin", "N", "updates"));
+         
 
+            return;
+           
             this.lbl_vertify.Text = "正在驗證 ...";
             if (stp != null)
             {
@@ -305,14 +330,41 @@ namespace LocalPublish
             stp = new System.Threading.Thread(new System.Threading.ThreadStart(Compair));
             stp.Start();
         }
+        public bool UploadFiles(string serverIp,string serverUserName, string serverPassword,List<ReleaseFileInfo> filselist)
+        {
+            string errfile = string.Empty;
+            using (var ftp = new FtpClient(serverIp, serverUserName, serverPassword))
+            {
+                ftp.AutoConnect();
+                foreach (var file in filselist)
+                {
+                    if(ftp.UploadFile(file.TrueFilePath, file.FilePath, FtpRemoteExists.Overwrite, true, FtpVerify.Retry) != FtpStatus.Success)
+                    {
+                        //
+                        errfile = file.TrueFilePath;
+                        break;
+                    }
+                }
+                //ftp.Connect();
+               
+               // ftp.UploadFiles(filepaths, "", FtpRemoteExists.Overwrite, true, FtpVerify.Retry);
+            }
+            if(errfile.Length> 0)
+            {
+                this.lbl_vertify.Text = "有一些文件沒有上傳成功，請重新更新=>"+ errfile;
+            
+                return false;
 
+            }
+            return true;
+        }
 
         private void Compair()
         {
             this.lbl_vertify.Text = "暫時不需要驗證功能。";
             return;
 
-            //   FtpClient ftp = new FtpClient("192.168.88.53", "NMErpUpdate", "Nien123ErpUp");
+        //     FtpClient ftp = new FtpClient("192.168.88.53", "NMErpUpdate", "Nien123ErpUp");
             //ftp.get
             string[] newFileList = System.IO.Directory.GetFiles(this.txt_basedif.Text, "*.*", System.IO.SearchOption.AllDirectories);
             List<ReleaseFileInfo> newFileData = new List<ReleaseFileInfo>();
@@ -396,6 +448,76 @@ namespace LocalPublish
             }
         }
 
-    
+
+        private static Orleans.IClusterClient _myclient = null;
+        private static bool connectedSuccess = false;
+        public static Orleans.IClusterClient _client
+        {
+            get
+            {
+                if (!connectedSuccess)
+                {
+
+                    if (_myclient != null)
+                    {
+                        if (_myclient.IsInitialized)
+                        {
+                            _myclient?.Close();
+                            _myclient?.Dispose();
+                        }
+                    }
+                    _myclient = GetClientBuilder().Build();
+                    _myclient.Connect().Wait();
+                    connectedSuccess = true;
+                }
+                return _myclient;
+            }
+        }
+        public static Orleans.IClientBuilder GetClientBuilder()
+        {
+
+            Orleans.IClientBuilder _clientbuilder = new ClientBuilder()
+
+                         .Configure<ClusterOptions>(options =>
+                         {
+                             options.ClusterId = AppConfig.ClusterId;
+                             options.ServiceId = AppConfig.ServiceId;
+                         })
+                           .Configure<ClientMessagingOptions>(ops =>
+                           {
+                               ops.ResponseTimeout = TimeSpan.FromMinutes(1);
+
+                               //   ops.NetworkInterfaceName
+                           });
+
+          //  .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(BusinessFacade.IBroadcast).Assembly).WithReferences());
+            //   _clientbuilder.UseLocalhostClustering();
+            _clientbuilder.UseRedisClustering(opt =>
+            {
+                opt.ConnectionString = AppConfig.HostServer;// "host:port";
+                opt.Database = 3;
+            });
+
+            return _clientbuilder;
+
+        }
+
+        private async void button5_Click_1(object sender, EventArgs e)
+        {
+            if (BroadcastAutoId <= 0)
+            {
+                MessageBox.Show("沒有產生新的版本數據。");
+                return;
+            }
+            IBroadcast broadcastBLL = _client.GetGrain<IBroadcast>(-1);
+            BusinessEntity.BroadcastEntity model = await broadcastBLL.GetModel(BroadcastAutoId);
+            model.OldLastActionCode = model.LastActionCode;
+            model.OldLastActionTime = model.LastActionTime;
+            model.OldLastActionUser = model.LastActionUser;
+            model.LastActionCode = "A";
+            model.LastActionUser = "Admin";
+             model = await broadcastBLL.Confirm(model);
+            this.lbl_vertify.Text = $"發佈成功。";
+        }
     }
 }

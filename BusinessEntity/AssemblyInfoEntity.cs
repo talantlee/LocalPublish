@@ -23,6 +23,7 @@ namespace BusinessEntity
         public string AssemblyName { get; set; }
         public string AssemblyPath { get; set; }
         public long FileDate { get; set; }
+        public long FileSize { get; set; }
         public bool isDeleted { get; set; }
 
         // Ultra Grid Detail Edit Status

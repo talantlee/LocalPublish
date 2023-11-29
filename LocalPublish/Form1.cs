@@ -116,7 +116,8 @@ namespace LocalPublish
                 if (f.StartsWith("ErpUpdate.")) continue;
 
                 FileInfo fi = new FileInfo(f);
-                ReleaseFileInfo file = new ReleaseFileInfo(f, f.Replace(this.txt_basedif.Text + "\\", ""), fi.Name, fi.LastWriteTime.Ticks);
+             
+                ReleaseFileInfo file = new ReleaseFileInfo(f, f.Replace(this.txt_basedif.Text + "\\", ""), fi.Name, fi.LastWriteTime.Ticks,fi.Length);
                 newFileData.Add(file);
 
             }
@@ -156,9 +157,12 @@ namespace LocalPublish
                 }
                 if (!isFined)
                 {
-                    ReleaseFileInfo file = new ReleaseFileInfo(this.txt_basedif.Text + "\\" + dr["AssemblyPath"].ToString(), dr["AssemblyPath"].ToString(), dr["AssemblyName"].ToString(), Convert.ToInt64(dr["FileDate"]));
-                    file.isDeleted = true;
-                    needUpdateFiles.Add(file);
+                    if (!Convert.ToBoolean(dr["isDeleted"]))
+                    {
+                        ReleaseFileInfo file = new ReleaseFileInfo(this.txt_basedif.Text + "\\" + dr["AssemblyPath"].ToString(), dr["AssemblyPath"].ToString(), dr["AssemblyName"].ToString(), Convert.ToInt64(dr["FileDate"]), Convert.ToInt64(dr["FileSize"]));
+                        file.isDeleted = true;
+                        needUpdateFiles.Add(file);
+                    }
                     // this.listView1.Items.Add(new ListViewItem(new string[] { fi.FileName, fi.FileDate.ToString() }));
                 }
             }
@@ -179,18 +183,21 @@ namespace LocalPublish
             public string FilePath { get; set; }
             public string TrueFilePath { get; set; }
             public long FileDate { get; set; }
+            public long FileSize { get; set; }
 
             public bool isDeleted { get; set; }
-            public ReleaseFileInfo(string fullpath, string fpath, string fname, long fdate)
+            public ReleaseFileInfo(string fullpath, string fpath, string fname, long fdate, long fileSize)
             {
                 FilePath = fpath;
                 FileName = fname;
                 FileDate = fdate;
                 isDeleted = false;
                 TrueFilePath = fullpath;
+                FileSize = fileSize;
             }
         }
         int BroadcastAutoId = 0;
+        string newVsersion = string.Empty;
         private void button4_Click(object sender, EventArgs e)
         {
            
@@ -202,7 +209,7 @@ namespace LocalPublish
                     this.progressBar1.Value = 0;
                     SqlHelper db = DatabaseFactory.CreateDatabase();
                    
-                    string newVsersion = string.Empty;
+                    newVsersion = string.Empty;
                     using (IDbConnection connection = db.GetConnection())
                     {
                         connection.Open();
@@ -218,7 +225,7 @@ namespace LocalPublish
                           
                             foreach (ReleaseFileInfo fi in needUpdateFiles)
                             {
-                                object[] para = { newVsersion, fi.FileName, fi.FilePath, fi.FileDate, fi.isDeleted };
+                                object[] para = { newVsersion, fi.FileName, fi.FilePath, fi.FileDate, fi.isDeleted, fi.FileSize };
                                 db.ExecuteNonQuery(tran, "SYS_AddNeedUpdateFile", para).ToString();
                                 if (this.progressBar1.Value < 98)
                                     this.progressBar1.Value += 1;
@@ -228,7 +235,7 @@ namespace LocalPublish
 
                             BroadcastAutoId = Convert.ToInt32(db.ExecuteScalar(tran, "Broadcast_Edit", 0, newVsersion, "Upgrade", "", "ALL", "Admin", "N", "updates"));
                             tran.Commit();
-                             this.lbl_vertify.Text = $"已經成功產生版本號： {BroadcastAutoId}的數據。";
+                             this.lbl_vertify.Text = $"已經成功產生版本號的數據。公告號為: {BroadcastAutoId}";
                             //this.progressBar1.Value = 1;
                             //if (UploadFiles("192.168.88.53", "NMErpUpdate", "Nien123ErpUp", needUpdateFiles))
                             //{
@@ -381,7 +388,7 @@ namespace LocalPublish
                 if (f.IndexOf(" defaultLoginer.xml") > -1) continue;
                 if (f.StartsWith("ErpUpdate.")) continue;
                 FileInfo fi = new FileInfo(f);
-                ReleaseFileInfo file = new ReleaseFileInfo(f, f.Replace(this.txt_basedif.Text + "\\", ""), fi.Name, fi.LastWriteTime.Ticks);
+                ReleaseFileInfo file = new ReleaseFileInfo(f, f.Replace(this.txt_basedif.Text + "\\", ""), fi.Name, fi.LastWriteTime.Ticks,fi.Length);
                 newFileData.Add(file);
             }
             this.progressBar1.Value = 0;
@@ -490,34 +497,60 @@ namespace LocalPublish
                                //   ops.NetworkInterfaceName
                            });
 
-          //  .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(BusinessFacade.IBroadcast).Assembly).WithReferences());
+            //  .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(BusinessFacade.IBroadcast).Assembly).WithReferences());
             //   _clientbuilder.UseLocalhostClustering();
             _clientbuilder.UseRedisClustering(opt =>
             {
                 opt.ConnectionString = AppConfig.HostServer;// "host:port";
                 opt.Database = 3;
             });
-
+            // _clientbuilder.UseLocalhostClustering();
             return _clientbuilder;
 
         }
 
-        private async void button5_Click_1(object sender, EventArgs e)
+        int BroadcastAutoIdLast = 0;
+        private  void button5_Click_1(object sender, EventArgs e)
         {
-            if (BroadcastAutoId <= 0)
+           // BroadcastAutoId = 95;
+          //  newVsersion = "1.02";
+         
+            if (BroadcastAutoId <= 0 || newVsersion.Length<2)
             {
                 MessageBox.Show("沒有產生新的版本數據。");
                 return;
             }
-            IBroadcast broadcastBLL = _client.GetGrain<IBroadcast>(-1);
-            BusinessEntity.BroadcastEntity model = await broadcastBLL.GetModel(BroadcastAutoId);
-            model.OldLastActionCode = model.LastActionCode;
-            model.OldLastActionTime = model.LastActionTime;
-            model.OldLastActionUser = model.LastActionUser;
-            model.LastActionCode = "A";
-            model.LastActionUser = "Admin";
-             model = await broadcastBLL.Confirm(model);
-            this.lbl_vertify.Text = $"發佈成功。";
+            try
+            {
+                if(BroadcastAutoIdLast== BroadcastAutoId){
+                    MessageBox.Show($"已經發佈過此版本。{BroadcastAutoIdLast}");
+                    return;
+                }
+                IVersions versionsBLL = _client.GetGrain<IVersions>(0);
+                var ver = versionsBLL.GetModel(decimal.Parse(newVsersion)).Result;
+                ver.OldLastActionCode = ver.LastActionCode;
+                ver.OldLastActionTime = ver.LastActionTime;
+                ver.OldLastActionUser = ver.LastActionUser;
+                ver.LastActionCode = "A";
+                ver.LastActionUser = "Admin";
+                ver.isLive = true;
+                ver=versionsBLL.Confirm(ver).Result;
+
+                IBroadcast broadcastBLL = _client.GetGrain<IBroadcast>(0);
+                BusinessEntity.BroadcastEntity model =  broadcastBLL.GetModel(BroadcastAutoId).Result;
+                model.OldLastActionCode = model.LastActionCode;
+                model.OldLastActionTime = model.LastActionTime;
+                model.OldLastActionUser = model.LastActionUser;
+                model.LastActionCode = "A";
+                model.LastActionUser = "Admin";
+                model = broadcastBLL.Confirm(model).Result;
+                this.lbl_vertify.Text = $"發佈成功。 公告號：{BroadcastAutoId}";
+                BroadcastAutoIdLast = BroadcastAutoId;
+            }
+            catch(Exception ex) 
+            {
+                MessageBox.Show(ex.ToString());
+            }
         }
     }
 }

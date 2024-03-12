@@ -17,6 +17,8 @@ using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using BusinessFacade;
 using BusinessEntity;
+using System.Security.Cryptography;
+
 namespace LocalPublish
 {
     public partial class Form1 : Form
@@ -89,31 +91,41 @@ namespace LocalPublish
             foreach (string f in newFileList)
             {
                 if (f.IndexOf(".pdb") > -1) continue;
+            
                 if (f.IndexOf(".scc") > -1) continue;
                 if (f.IndexOf(".db") > -1) continue;
                 if (f.IndexOf("\\ref\\") > -1) continue;
                 if (f.IndexOf("\\logs\\") > -1) continue;
-             //   if (f.IndexOf("\\runtimes\\") > -1) {
+                //   if (f.IndexOf("\\runtimes\\") > -1) {
 
-                    //win-x64,win-x86,win-arm64,
+                //win-x64,win-x86,win-arm64,
                 //    continue;
-             //   }
+                //   }
 
+            
+               
 
-             
                 if (f.IndexOf("\\StartUp.exe.WebView2\\") > -1) continue;
                 if (f.IndexOf("\\NMERP.exe.WebView2\\") > -1) continue;
  
 
                 if (f.IndexOf("\\WebView2Data\\EBWebView\\") > -1) continue;
                 if (f.IndexOf("\\WebView2Data\\tempfiles\\") > -1) continue;
-                
+                if (f.IndexOf(".deps.json") > -1) continue;//dagger.li 2023-12-20
+
+              
+                if (f.IndexOf("DataAccessLayers.dll") > -1) continue;//dagger.li 2024-1-16 防止同事误放入文件
+                if (f.IndexOf("Nienmade.DataHelper.dll") > -1) continue;//dagger.li 2024-1-16 防止同事误放入文件
+                if (f.IndexOf("appsettings.orleanshost") > -1) continue;//dagger.li 2024-1-16 防止同事误放入文件
+                if (f.IndexOf("BusinessSysRules.dll") > -1) continue;//dagger.li 2024-1-16 防止同事误放入文件
+                if (f.IndexOf("BusinessSysDAL.dll") > -1) continue;//dagger.li 2024-1-16 防止同事误放入文件
+
                 if (f.IndexOf("\\data\\UserSet\\") > -1) continue;
                 if (f.IndexOf("\\updated\\") > -1) continue;
                 if (f.IndexOf("Infragistics.") > -1 && f.IndexOf(".xml") > -1) continue;
                 if (f.IndexOf("defaultLoginer.xml") > -1) continue;
 
-                if (f.StartsWith("ErpUpdate.")) continue;
+              //  if (f.StartsWith("ErpUpdate.")) continue;
 
                 FileInfo fi = new FileInfo(f);
              
@@ -145,6 +157,13 @@ namespace LocalPublish
             }
             foreach (DataRow dr in olddata.Rows)
             {
+                 if (dr["AssemblyPath"].ToString().IndexOf("DataAccessLayers.dll") > -1) continue;//dagger.li 2024-1-16 防止同事误放入文件
+                if (dr["AssemblyPath"].ToString().IndexOf("Nienmade.DataHelper.dll") > -1) continue;//dagger.li 2024-1-16 防止同事误放入文件
+                if (dr["AssemblyPath"].ToString().IndexOf("appsettings.orleanshost") > -1) continue;//dagger.li 2024-1-16 防止同事误放入文件
+                if (dr["AssemblyPath"].ToString().IndexOf("BusinessSysRules.dll") > -1) continue;//dagger.li 2024-1-16 防止同事误放入文件
+                if (dr["AssemblyPath"].ToString().IndexOf("BusinessSysDAL.dll") > -1) continue;//dagger.li 2024-1-16 防止同事误放入文件
+
+
                 bool isFined = false;
                 //isDelete
                 foreach (ReleaseFileInfo fi in newFileData)
@@ -159,7 +178,10 @@ namespace LocalPublish
                 {
                     if (!Convert.ToBoolean(dr["isDeleted"]))
                     {
-                        ReleaseFileInfo file = new ReleaseFileInfo(this.txt_basedif.Text + "\\" + dr["AssemblyPath"].ToString(), dr["AssemblyPath"].ToString(), dr["AssemblyName"].ToString(), Convert.ToInt64(dr["FileDate"]), Convert.ToInt64(dr["FileSize"]));
+                        long FileSize = 0;
+                        if (!(dr["FileSize"] is System.DBNull))
+                            FileSize= Convert.ToInt64(dr["FileSize"]);
+                        ReleaseFileInfo file = new ReleaseFileInfo(this.txt_basedif.Text + "\\" + dr["AssemblyPath"].ToString(), dr["AssemblyPath"].ToString(), dr["AssemblyName"].ToString(), Convert.ToInt64(dr["FileDate"]), FileSize);
                         file.isDeleted = true;
                         needUpdateFiles.Add(file);
                     }

@@ -150,15 +150,22 @@ namespace AutoLocalPublish
             this.listView1.Items.Clear();
             List<ReleaseFileInfo> newFileData = new List<ReleaseFileInfo>();
             List<string> excludeFiles = new List<string>();
+           
             List<string> notAllowUpdateFiles = new List<string>();
+            //todo:除了runtimes 或根目錄，其他地方不允許放置dll,exe.
+            List<string> excludeBaseDir = new List<string>();
             exfileAttrs.ForEach(attr => {
                 if (attr.OpType.ToLower() == "exclude")
                 {
                     excludeFiles.Add(attr.Key);
                 }
+                else if (attr.OpType.ToLower() == "allowsuddir")
+                {
+                    excludeBaseDir.Add(attr.Key);
+                }
             });
-          
          
+
             if (this.tbx_backupdir.Text.Length > 0 && this.tbx_publishdir.Text.Length>0)
             {
                 foreach (string f in newFileList)
@@ -200,8 +207,30 @@ namespace AutoLocalPublish
                             break;
                         }
                     }
-                    if (isexclude) { notAllowUpdateFiles.Add(f); continue; }
+                    if (!isexclude)
+                    {
+                        if (f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // //todo:除了runtimes 或根目錄，其他地方不允許放置dll,exe.
+                            var subbasedir = f.Replace("/", "\\").Replace(this.txt_basedif.Text.Replace("/", "\\")+"\\", "");
+                      
+                            if (subbasedir.Contains("\\") && !subbasedir.StartsWith("runtimes", StringComparison.OrdinalIgnoreCase))
+                            {
+                                isexclude = true;
+                                foreach (var item in excludeBaseDir)
+                                {
+                                    if (f.ToLower().IndexOf(item.ToLower()) > -1)
+                                    {
+                                        isexclude = false;
+                                        break;
+                                    }
+                                }
+                            }
 
+                        }
+                    }
+                  
+                    if (isexclude) { notAllowUpdateFiles.Add(f); continue; }
                     //  if (f.StartsWith("ErpUpdate.")) continue;
 
                     FileInfo fi = new FileInfo(f);
@@ -322,7 +351,8 @@ namespace AutoLocalPublish
                             Directory.CreateDirectory(todir);
                         }
                         string oldfilepath= fi.TrueFilePath.Replace(this.txt_basedif.Text+"\\", this.tbx_publishdir.Text).Replace("/", "\\");
-                        System.IO.File.Copy(oldfilepath, todir+"\\"+fi.FileName, true);
+                        if(File.Exists(oldfilepath))
+                            System.IO.File.Copy(oldfilepath, todir+"\\"+fi.FileName, true);
                     }
                 }
 

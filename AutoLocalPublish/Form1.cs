@@ -18,6 +18,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Security.Cryptography;
 using AutoLocalPublish.Models;
 using BusinessFacade;
+using System.Runtime.ConstrainedExecution;
 
 namespace AutoLocalPublish
 {
@@ -750,7 +751,26 @@ namespace AutoLocalPublish
 
                 foreach (var fi in newFileList)
                 {
+                    try
+                    {
                         System.IO.File.Delete(fi);
+                    }
+                    catch
+                    {
+                        FileAttributes attributes = File.GetAttributes(Path.Combine(System.Environment.CurrentDirectory, fi));
+                        if (attributes.HasFlag(FileAttributes.ReadOnly))
+                        {
+                            File.SetAttributes(Path.Combine(System.Environment.CurrentDirectory, fi), attributes & ~FileAttributes.ReadOnly);
+                            try
+                            {
+                                System.IO.File.Delete(fi);
+                            }
+                            catch
+                            {
+
+                            }
+                        }
+                    }
                 }
             }
             catch (Exception ex)

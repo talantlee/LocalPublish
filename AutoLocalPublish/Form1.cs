@@ -352,8 +352,10 @@ namespace AutoLocalPublish
                             Directory.CreateDirectory(todir);
                         }
                         string oldfilepath= fi.TrueFilePath.Replace(this.txt_basedif.Text+"\\", this.tbx_publishdir.Text).Replace("/", "\\");
-                        if(File.Exists(oldfilepath))
-                            System.IO.File.Copy(oldfilepath, todir+"\\"+fi.FileName, true);
+                        if (File.Exists(oldfilepath) && !File.Exists(todir + "\\" + fi.FileName))
+                        {
+                            System.IO.File.Copy(oldfilepath, todir + "\\" + fi.FileName, true);
+                        }
                     }
                 }
 
@@ -757,10 +759,9 @@ namespace AutoLocalPublish
                     }
                     catch
                     {
-                        FileAttributes attributes = File.GetAttributes(Path.Combine(System.Environment.CurrentDirectory, fi));
-                        if (attributes.HasFlag(FileAttributes.ReadOnly))
+                        if(RemoveReadOnly(Path.Combine(System.Environment.CurrentDirectory, fi)))
                         {
-                            File.SetAttributes(Path.Combine(System.Environment.CurrentDirectory, fi), attributes & ~FileAttributes.ReadOnly);
+
                             try
                             {
                                 System.IO.File.Delete(fi);
@@ -770,6 +771,7 @@ namespace AutoLocalPublish
 
                             }
                         }
+                     
                     }
                 }
             }
@@ -779,6 +781,19 @@ namespace AutoLocalPublish
                 return;
             }
             //移除文件
+        }
+
+        private bool RemoveReadOnly(string path)
+        {
+            FileAttributes attributes = File.GetAttributes(path);
+            if (attributes.HasFlag(FileAttributes.ReadOnly))
+            {
+                File.SetAttributes(path, attributes & ~FileAttributes.ReadOnly);
+                return true;
+            }else
+            {
+                return false;
+            }
         }
 
         private void panel2_Paint(object sender, PaintEventArgs e)

@@ -352,9 +352,11 @@ namespace AutoLocalPublish
                             Directory.CreateDirectory(todir);
                         }
                         string oldfilepath= fi.TrueFilePath.Replace(this.txt_basedif.Text+"\\", this.tbx_publishdir.Text).Replace("/", "\\");
-                        if (File.Exists(oldfilepath) && !File.Exists(todir + "\\" + fi.FileName))
+                        if (File.Exists(oldfilepath))
                         {
-                            System.IO.File.Copy(oldfilepath, todir + "\\" + fi.FileName, true);
+                            if(!File.Exists(todir + "\\" + fi.FileName))
+                                System.IO.File.Copy(oldfilepath, todir + "\\" + fi.FileName, true);
+                           
                         }
                     }
                 }
@@ -715,7 +717,23 @@ namespace AutoLocalPublish
                         {
                             Directory.CreateDirectory(todir);
                         }
-                           System.IO.File.Copy(fi.TrueFilePath, todir + "\\" + fi.FileName, true);
+                        try
+                        {
+                            System.IO.File.Copy(fi.TrueFilePath, todir + "\\" + fi.FileName, true);
+                        }
+                        catch
+                        {
+                            if(RemoveReadOnly(todir + "\\" + fi.FileName))
+                            {
+                                try
+                                {
+                                    System.IO.File.Copy(fi.TrueFilePath, todir + "\\" + fi.FileName, true);
+                                }catch(Exception ex1)
+                                {
+                                    throw ex1;
+                                }
+                            }
+                        }
                     }
                 }
 

@@ -309,25 +309,7 @@ namespace AutoLocalPublish
             //       SYS_GetNeedUpdateFiles  return db.ExecuteDatasetSqlString(sqlCommand).Tables[0];
         }
 
-        public class ReleaseFileInfo
-        {
-            public string FileName { get; set; }
-            public string FilePath { get; set; }
-            public string TrueFilePath { get; set; }
-            public long FileDate { get; set; }
-            public long FileSize { get; set; }
-
-            public bool isChanged { get; set; }
-            public ReleaseFileInfo(string fullpath, string fpath, string fname, long fdate, long fileSize)
-            {
-                FilePath = fpath;
-                FileName = fname;
-                FileDate = fdate;
-                isChanged = true;
-                TrueFilePath = fullpath;
-                FileSize = fileSize;
-            }
-        }
+     
         int BroadcastAutoId = 0;
         string newVsersion = string.Empty;
         private void button4_Click(object sender, EventArgs e)
@@ -688,10 +670,16 @@ namespace AutoLocalPublish
         int BroadcastAutoIdLast = 0;
         private void button5_Click_1(object sender, EventArgs e)
         {
+
+            if (BroadcastAutoId <= 0 || newVsersion.Length < 2)
+            {
+                MessageBox.Show("沒有產生新的版本數據。");
+                return;
+            }
             // BroadcastAutoId = 95;
             //  newVsersion = "1.02";
-
-           
+            //MessageBox.Show($"請到 微信“程序更新” 群，聯繫 運維同事 進行第3步的發佈！ 版本號為： \" {newVsersion.ToString()} \"    （兆豐：崔偉，任杰，億豐，泛昌：盛新民）");
+            //return;
 
 
             if (BroadcastAutoId <= 0 || newVsersion.Length < 2)
@@ -827,7 +815,7 @@ namespace AutoLocalPublish
             if (MessageBox.Show("確定要刪除最新一個未發佈的版本嗎？", "Alert", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
 
-                sqlCommand = "declare @ver varchar(30);select @ver=Max(Version) from versions where isLive = 0;delete from versions where isLive = 0 and [Version]=isnull(@ver,0);if @@rowcount>0 delete AssemblyInfoList where [Version]=isnull(@ver,0); select ver=isnull(@ver,0);  ";
+                sqlCommand = "declare @ver varchar(30);select @ver=Max(Version) from versions where isLive = 0;delete from versions where isLive = 0 and [Version]=isnull(@ver,0) and datediff(minute,lastactiontime,getdate())<15;if @@rowcount>0 begin delete AssemblyInfoList where [Version]=isnull(@ver,0); end else begin set @ver=0 end  select ver=isnull(@ver,0); ";
                  var ver= db.ExecuteScalarSqlString(sqlCommand);
                 if(ver!= null) { 
                     if(decimal.TryParse(ver.ToString(),out decimal oldver))
@@ -836,12 +824,35 @@ namespace AutoLocalPublish
                         {
                             MessageBox.Show("刪除成功:" + ver);
                             return;
+                        }else
+                        {
+                            MessageBox.Show("發佈版本數據已經超過15分鐘，不能刪除。" );
+                            return;
                         }
                     }
                 }
                 MessageBox.Show("沒有版本需要刪除。");
 
             }
+        }
+    }
+    public class ReleaseFileInfo
+    {
+        public string FileName { get; set; }
+        public string FilePath { get; set; }
+        public string TrueFilePath { get; set; }
+        public long FileDate { get; set; }
+        public long FileSize { get; set; }
+
+        public bool isChanged { get; set; }
+        public ReleaseFileInfo(string fullpath, string fpath, string fname, long fdate, long fileSize)
+        {
+            FilePath = fpath;
+            FileName = fname;
+            FileDate = fdate;
+            isChanged = true;
+            TrueFilePath = fullpath;
+            FileSize = fileSize;
         }
     }
 }

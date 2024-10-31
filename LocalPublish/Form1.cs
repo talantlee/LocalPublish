@@ -141,8 +141,8 @@ namespace LocalPublish
                 if (f.IndexOf("BusinessSysFacade.dll") > -1) continue;//dagger.li 2024-3-25 防止同事误放入文件
                 if (f.IndexOf("BusinessSysEntity.dll") > -1) continue;//dagger.li 2024-3-25 防止同事误放入文件
 
-                if (f.IndexOf("System.Data.SqlClient") > -1) continue;//dagger.li 2024-1-16 防止同事误放入文件
-                if (f.IndexOf("System.Data.OleDb") > -1) continue;//dagger.li 2024-1-16 防止同事误放入文件
+             //   if (f.IndexOf("System.Data.SqlClient") > -1) continue;//dagger.li 2024-1-16 防止同事误放入文件
+              //  if (f.IndexOf("System.Data.OleDb") > -1) continue;//dagger.li 2024-1-16 防止同事误放入文件
                 
 
                 if (f.IndexOf("\\data\\UserSet\\") > -1) continue;
@@ -201,8 +201,8 @@ namespace LocalPublish
                 if (dr["AssemblyPath"].ToString().IndexOf("BusinessSysFacade.dll") > -1) continue;//dagger.li 2024-3-25 防止同事误放入文件
                 if (dr["AssemblyPath"].ToString().IndexOf("BusinessSysEntity.dll") > -1) continue;//dagger.li 2024-3-25 防止同事误放入文件
 
-                if (dr["AssemblyPath"].ToString().IndexOf("System.Data.SqlClient") > -1) continue;//dagger.li 2024-4-03 防止同事误放入文件
-                if (dr["AssemblyPath"].ToString().IndexOf("System.Data.OleDb") > -1) continue;//dagger.li 2024-4-03 防止同事误放入文件
+               // if (dr["AssemblyPath"].ToString().IndexOf("System.Data.SqlClient") > -1) continue;//dagger.li 2024-4-03 防止同事误放入文件
+              //  if (dr["AssemblyPath"].ToString().IndexOf("System.Data.OleDb") > -1) continue;//dagger.li 2024-4-03 防止同事误放入文件
 
                 bool isexclude = false;
                 foreach (var item in excludeFiles)

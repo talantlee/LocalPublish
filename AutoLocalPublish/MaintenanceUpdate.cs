@@ -160,7 +160,7 @@ namespace AutoLocalPublish
 
                     foreach (DataRow dr in OldData.Rows)
                     {
-                        if (dr["AssemblyPath"].ToString().Equals(fi.FilePath, StringComparison.OrdinalIgnoreCase))
+                        if (dr["AssemblyPath"].ToString().Equals(fi.FilePath.Replace("/","\\"), StringComparison.OrdinalIgnoreCase))
                         {
 
                             if (Convert.ToInt64(dr["FileDate"]) == fi.FileDate)

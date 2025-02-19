@@ -31,7 +31,7 @@ namespace AutoLocalPublish
             AppConfig.BackUpDir = System.Configuration.ConfigurationManager.AppSettings.Get("BackUpDir");
             AppConfig.PublishToDir = System.Configuration.ConfigurationManager.AppSettings.Get("PublishToDir");
             
-            Application.Run(new MaintenanceUpdate());
+            Application.Run(new Form1());
         }
     }
 }

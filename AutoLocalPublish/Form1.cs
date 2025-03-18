@@ -277,6 +277,9 @@ namespace AutoLocalPublish
                             if (dr["AssemblyPath"].ToString().Equals(fi.FilePath.Replace("/", "\\"), StringComparison.OrdinalIgnoreCase))
                             //    if (dr["AssemblyPath"].ToString().Equals(fi.FilePath, StringComparison.OrdinalIgnoreCase))
                             {
+                                //也可以用文件hash值對比
+                                //using var sha256 = SHA256.Create();
+                                //var fileHash = sha256.ComputeHash(File.ReadAllBytes(filePath));
 
                                 if (Convert.ToInt64(dr["FileDate"]) == fi.FileDate)
                                 {

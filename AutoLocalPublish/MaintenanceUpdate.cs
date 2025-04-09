@@ -41,7 +41,29 @@ namespace AutoLocalPublish
 
 
         }
+        public static string GetFileIntegrity(string filePath)
+        {
+            if (AppConfig.HashCompare != "1")
+            {
+                return string.Empty;
+            }
+            try
+            {
+                using (var sha256 = System.Security.Cryptography.SHA256.Create())
+                using (var stream = File.OpenRead(filePath))
+                {
+                    byte[] hashBytes = sha256.ComputeHash(stream);
+                    string actualHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+                    return actualHash;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"GetFileIntegrity({filePath}):" + ex.Message);
+                return string.Empty;
 
+            }
+        }
 
         private void Publish()
         {
@@ -276,7 +298,7 @@ namespace AutoLocalPublish
                                 {
                                     if (fi.isChanged)
                                     {
-                                        object[] para = { newVsersion, fi.FileName, fi.FilePath, fi.FileDate, false, fi.FileSize };
+                                        object[] para = { newVsersion, fi.FileName, fi.FilePath, fi.FileDate, false, fi.FileSize, GetFileIntegrity(fi.TrueFilePath) };
                                         db.ExecuteNonQuery(tran, "SYS_AddNeedUpdateFile", para).ToString();
                                     }
                                     if (this.progressBar1.Value < 98)

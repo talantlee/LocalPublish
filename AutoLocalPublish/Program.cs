@@ -30,7 +30,11 @@ namespace AutoLocalPublish
             AppConfig.ClusterId = System.Configuration.ConfigurationManager.AppSettings.Get("ClusterId");
             AppConfig.BackUpDir = System.Configuration.ConfigurationManager.AppSettings.Get("BackUpDir");
             AppConfig.PublishToDir = System.Configuration.ConfigurationManager.AppSettings.Get("PublishToDir");
-            
+            AppConfig.HashCompare = System.Configuration.ConfigurationManager.AppSettings.Get("HashCompare");
+            if(AppConfig.HashCompare == null)
+            {
+                AppConfig.HashCompare = "";
+            }
             Application.Run(new Form1());
         }
     }

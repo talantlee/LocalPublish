@@ -19,6 +19,7 @@ using System.Security.Cryptography;
 using AutoLocalPublish.Models;
 using BusinessFacade;
 using System.Runtime.ConstrainedExecution;
+using System.Net;
 
 namespace AutoLocalPublish
 {
@@ -686,11 +687,21 @@ namespace AutoLocalPublish
 
             //  .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(BusinessFacade.IBroadcast).Assembly).WithReferences());
             //   _clientbuilder.UseLocalhostClustering();
-            _clientbuilder.UseRedisClustering(opt =>
+            if (AppConfig.HostServer.IndexOf("6379") == -1)
             {
-                opt.ConnectionString = AppConfig.HostServer;// "host:port";
-                opt.Database = 3;
-            });
+                string[] serverip = AppConfig.HostServer.Split(':');
+                //AppConfig.HostServer
+                _clientbuilder.UseStaticClustering(new IPEndPoint[] { new IPEndPoint(IPAddress.Parse(serverip[0]), int.Parse(serverip[1])) });
+            }
+            else
+            {
+                _clientbuilder.UseRedisClustering(opt =>
+                {
+                    opt.ConnectionString = AppConfig.HostServer;// "host:port";
+                    opt.Database = 3;
+                });
+            }
+          
             // _clientbuilder.UseLocalhostClustering();
             return _clientbuilder;
 

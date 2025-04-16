@@ -20,6 +20,7 @@ using AutoLocalPublish.Models;
 using BusinessFacade;
 using System.Runtime.ConstrainedExecution;
 using System.Net;
+using System.Diagnostics;
 
 namespace AutoLocalPublish
 {
@@ -827,6 +828,32 @@ namespace AutoLocalPublish
                 return;
             }
             //移除文件
+
+            //Run Bat.File
+            if (!string.IsNullOrEmpty(AppConfig.CopyToBackUpServer))
+            {
+                if (System.IO.File.Exists(AppConfig.CopyToBackUpServer))
+                {
+           
+                       var   usererp = new System.Diagnostics.ProcessStartInfo(AppConfig.CopyToBackUpServer);
+                        usererp.CreateNoWindow = true;
+                       var p = new Process();
+                        p.StartInfo = usererp; 
+                       p.Start();
+                        int rollcheck = 8;
+                        while (rollcheck > 0)
+                        {
+                            if (p.WaitForExit(2000))
+                            {
+                                break;
+                            }
+                            rollcheck--;
+                        }
+                    this.lbl_vertify.Text = $"發佈成功。 公告號：{BroadcastAutoId} ，執行{AppConfig.CopyToBackUpServer}完成。";
+                }
+            }
+          
+            //CopyToBackUpServer
         }
 
         private bool RemoveReadOnly(string path)

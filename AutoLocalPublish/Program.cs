@@ -31,7 +31,14 @@ namespace AutoLocalPublish
             AppConfig.BackUpDir = System.Configuration.ConfigurationManager.AppSettings.Get("BackUpDir");
             AppConfig.PublishToDir = System.Configuration.ConfigurationManager.AppSettings.Get("PublishToDir");
             AppConfig.HashCompare = System.Configuration.ConfigurationManager.AppSettings.Get("HashCompare");
-            if(AppConfig.HashCompare == null)
+            AppConfig.CopyToBackUpServer = System.Configuration.ConfigurationManager.AppSettings.Get("CopyToBackUpServer");
+          
+            if (AppConfig.CopyToBackUpServer == null)
+            {
+                AppConfig.CopyToBackUpServer = "";
+            }
+
+            if (AppConfig.HashCompare == null)
             {
                 AppConfig.HashCompare = "";
             }

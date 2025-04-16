@@ -25,8 +25,9 @@ namespace AutoLocalPublish
         public static string PublishToDir { get; set; }
 
         public static string HashCompare { get; set; }
-        
+        public static string CopyToBackUpServer { get; set; }
 
+        
 
 
         //public static void InitConfig(IConfigurationRoot config) {

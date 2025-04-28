@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -33,7 +34,9 @@ namespace AutoLocalPublish
 
         private void button5_Click(object sender, EventArgs e)
         {
-
+            string  sqlCommand = "select * from AssemblyInfo order by fileDate desc;";
+            SqlHelper db = DatabaseFactory.CreateDatabase();
+            OldData = db.ExecuteDatasetSqlString(sqlCommand).Tables[0];
 
             Publish();
 
@@ -372,6 +375,31 @@ namespace AutoLocalPublish
 
                 needUpdateFiles = new List<ReleaseFileInfo>();
                 this.listView1.Items.Clear();
+
+                //Run Bat.File
+                if (!string.IsNullOrEmpty(AppConfig.CopyToBackUpServer))
+                {
+                    if (System.IO.File.Exists(AppConfig.CopyToBackUpServer))
+                    {
+
+                        var usererp = new System.Diagnostics.ProcessStartInfo(AppConfig.CopyToBackUpServer);
+                        usererp.CreateNoWindow = true;
+                        var p = new Process();
+                        p.StartInfo = usererp;
+                        p.Start();
+                        int rollcheck = 8;
+                        while (rollcheck > 0)
+                        {
+                            if (p.WaitForExit(2000))
+                            {
+                                break;
+                            }
+                            rollcheck--;
+                        }
+                        this.lbl_vertify.Text = $"發佈成功。 公告號：{BroadcastAutoId} ，執行{AppConfig.CopyToBackUpServer}完成。";
+                    }
+                }
+
             }
             catch (Exception ex)
             {
@@ -428,9 +456,7 @@ namespace AutoLocalPublish
                 }
             }
             this.lbl_vertify.Text = $"當前版本號為：{currentVersion}";
-            sqlCommand = "select * from AssemblyInfo order by fileDate desc;";
-
-            OldData = db.ExecuteDatasetSqlString(sqlCommand).Tables[0];
+       
         }
     }
 }

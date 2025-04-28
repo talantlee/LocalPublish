@@ -133,8 +133,11 @@ namespace AutoLocalPublish
                     || f.ToLower().IndexOf(".dll") > -1
                        || f.ToLower().IndexOf(".config") > -1
                         || f.ToLower().IndexOf(".xml") > -1
+                            || f.ToLower().IndexOf(".lng") > -1 // 不知道誰建立了一個 ChsEng.lng；
                           || f.ToLower().IndexOf(".json") > -1
                            || f.ToLower().IndexOf(".runtimeconfig") > -1
+                            || f.ToLower().IndexOf(".bat") > -1
+                               || f.ToLower().IndexOf(".html") > -1 //RectangleLayout.html 
                             || f.ToLower().IndexOf(".ico") > -1
                              || f.ToLower().IndexOf(".db") > -1
                     )
@@ -276,7 +279,7 @@ namespace AutoLocalPublish
  
                         foreach (DataRow dr in olddata.Rows)
                         {
-                            if (dr["AssemblyPath"].ToString().Equals(fi.FilePath.Replace("/", "\\"), StringComparison.OrdinalIgnoreCase))
+                            if (dr["AssemblyPath"].ToString().Equals(fi.TrueFilePath.Replace("/", "\\"), StringComparison.OrdinalIgnoreCase))
                             //    if (dr["AssemblyPath"].ToString().Equals(fi.FilePath, StringComparison.OrdinalIgnoreCase))
                             {
                                 //也可以用文件hash值對比

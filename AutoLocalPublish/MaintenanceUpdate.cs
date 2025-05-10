@@ -35,7 +35,7 @@ namespace AutoLocalPublish
         private void button5_Click(object sender, EventArgs e)
         {
             string  sqlCommand = "select * from AssemblyInfo order by fileDate desc;";
-            SqlHelper db = DatabaseFactory.CreateDatabase();
+              SqlHelper db = DatabaseFactory.CreateDatabase();
             OldData = db.ExecuteDatasetSqlString(sqlCommand).Tables[0];
 
             Publish();

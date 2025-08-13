@@ -26,6 +26,7 @@ namespace AutoLocalPublish
         bool isbackupsuccess = false;
         int BroadcastAutoId = 0;
         string newVsersion = string.Empty;
+      
         int BroadcastAutoIdLast = 0;
         public MaintenanceUpdate()
         {
@@ -67,7 +68,82 @@ namespace AutoLocalPublish
 
             }
         }
+        private bool RemoveReadOnly(string path)
+        {
+            FileAttributes attributes = File.GetAttributes(path);
+            if (attributes.HasFlag(FileAttributes.ReadOnly))
+            {
+                File.SetAttributes(path, attributes & ~FileAttributes.ReadOnly);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
+        private void moveRootDlls(string basedir)
+        {
+            //Move RootExternalDLLs
+            string[] rootFileList = System.IO.Directory.GetFiles(basedir, "*.*", System.IO.SearchOption.TopDirectoryOnly);
+            if (AutoLocalPublish.Form1.RootExternalDLLs.Length > 0)
+                foreach (string f in rootFileList)
+                {
+                    if (AutoLocalPublish.Form1.RootExternalDLLs.Contains(Path.GetFileName(f)))
+                    {
+                        try
+                        {
+                            if (!Directory.Exists(Path.Combine(basedir, "RootExternalDLLs")))
+                            {
+                                Directory.CreateDirectory(Path.Combine(basedir, "RootExternalDLLs"));
+                            }
+                            if(File.Exists(Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)))){
+
+                                FileInfo file1 = new FileInfo(f);
+                                FileInfo file2 = new FileInfo(Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)));
+
+                                if(file1.LastWriteTime > file2.LastWriteTime)
+                                {
+                                    File.Copy(f, Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)));
+                                }
+                               
+                            }
+                            else
+                            {
+                                File.Copy(f, Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)));
+                            }
+                           
+                        }
+                        catch
+                        {
+                            if (File.Exists(Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f))))
+                                if (RemoveReadOnly(Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f))))
+                                {
+                                    try
+                                    {
+                                        FileInfo file1 = new FileInfo(f);
+                                        FileInfo file2 = new FileInfo(Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)));
+
+                                        if (file1.LastWriteTime > file2.LastWriteTime)
+                                        {
+                                            File.Copy(f, Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)));
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        MessageBox.Show("無法移動RootExternalDLLs檔案，請確認目錄是否有權限。");
+                                        return;
+                                    }
+                                }
+                        }
+
+                    }
+                }
+        }
+        private static bool isRootExtentDll(string filename)
+        {
+            return AutoLocalPublish.Form1.RootExternalDLLs.Contains(filename);
+        }
         private void Publish()
         {
             BroadcastAutoId = 0;
@@ -78,6 +154,7 @@ namespace AutoLocalPublish
                 MessageBox.Show("未設置更新目錄。");
                 return;
             }
+            moveRootDlls(AppConfig.PublishToDir);
             //TODO:1 根目錄 只能放 exe,dll,xml,.config,.json,.runtimeconfig,ico
             string[] basenewFileList = System.IO.Directory.GetFiles(AppConfig.PublishToDir, "*.*", System.IO.SearchOption.TopDirectoryOnly);
           
@@ -142,6 +219,7 @@ namespace AutoLocalPublish
                 if (f.IndexOf(".db") > -1) { continue; }
                 if (f.IndexOf("\\ref\\") > -1) { continue; }
                 if (f.IndexOf("\\logs\\") > -1) { continue; }
+                if (f.IndexOf("\\RootExternalDLLs\\") > -1) { continue; }
                 //   if (f.IndexOf("\\runtimes\\") > -1) {
 
                 //win-x64,win-x86,win-arm64,
@@ -164,22 +242,68 @@ namespace AutoLocalPublish
                 if (f.IndexOf("Infragistics.") > -1 && f.IndexOf(".xml") > -1) { continue; }
                 if (f.IndexOf("defaultLoginer.xml") > -1) { continue; }
 
-          
+                FileInfo fi = new FileInfo(f);
+                //Special Dir
+                if (f.IndexOf("\\RootExternalDLLs\\") > -1) 
+                {
+                    //判斷是否已經存在，如果存在，則比較時間，如果時間比較新，則覆蓋。
+                    bool isFindInBase = false;
+                    foreach (var item in newFileData)
+                    {
+                        if (item.FilePath.Equals(f.Replace(AppConfig.PublishToDir + "\\", "").Replace("RootExternalDLLs\\", "")))
+                        {
+                            if (fi.LastWriteTime.Ticks > item.FileDate)
+                            {
+                                item.FileDate = fi.LastWriteTime.Ticks;
+                            }
+                            isFindInBase = true;
+                            break;
+                        }
+                    }
+                    if (!isFindInBase)
+                    {
+                        ReleaseFileInfo file = new ReleaseFileInfo(f, f.Replace(AppConfig.PublishToDir + "\\", "").Replace("RootExternalDLLs\\", ""), fi.Name, fi.LastWriteTime.Ticks, fi.Length);
+                        newFileData.Add(file);
+                    }
+                }else
+                {
+                    ReleaseFileInfo file = new ReleaseFileInfo(f, f.Replace(AppConfig.PublishToDir + "\\", ""), fi.Name, fi.LastWriteTime.Ticks, fi.Length);
+                    newFileData.Add(file);
+                }
                 //  if (f.StartsWith("ErpUpdate.")) continue;
 
-                FileInfo fi = new FileInfo(f);
-
-                ReleaseFileInfo file = new ReleaseFileInfo(f, f.Replace(AppConfig.PublishToDir + "\\", ""), fi.Name, fi.LastWriteTime.Ticks, fi.Length);
-                newFileData.Add(file);
+               
 
             }
-         
+            //RootExternalDLLs 處理
+            string[] rootFileList = System.IO.Directory.GetFiles(Path.Combine(AppConfig.PublishToDir, "RootExternalDLLs"), "*.*", System.IO.SearchOption.TopDirectoryOnly);
+            foreach (string f in newFileList)
+            {
+                FileInfo fi = new FileInfo(f);
+                bool isFindInBase = false;
+                foreach (var item in newFileData)
+                {
+                    if (item.FilePath.Equals(f.Replace(AppConfig.PublishToDir + "\\", "").Replace("RootExternalDLLs\\", "")))
+                    {
+                        if (fi.LastWriteTime.Ticks > item.FileDate)
+                        {
+                            item.FileDate = fi.LastWriteTime.Ticks;
+                        }
+                        isFindInBase = true;
+                        break;
+                    }
+                }
+                if (!isFindInBase)
+                {
+                    ReleaseFileInfo file = new ReleaseFileInfo(f, f.Replace(AppConfig.PublishToDir + "\\", "").Replace("RootExternalDLLs\\", ""), fi.Name, fi.LastWriteTime.Ticks, fi.Length);
+                    newFileData.Add(file);
+                }
+            }
 
-          
+
             if (newFileData.Count > 0)
             {
                
-
                 foreach (ReleaseFileInfo fi in newFileData)
                 {
 
@@ -218,7 +342,7 @@ namespace AutoLocalPublish
                             // //todo:除了runtimes 或根目錄，其他地方不允許放置dll,exe.
                             var subbasedir = fi.FilePath.Replace("/", "\\").Replace(AppConfig.PublishToDir.Replace("/", "\\") + "\\", "");
 
-                            if (subbasedir.Contains("\\") && !subbasedir.StartsWith("runtimes", StringComparison.OrdinalIgnoreCase) && subbasedir.ToLower().IndexOf("printboxno") == -1)
+                            if (subbasedir.Contains("\\") && !subbasedir.StartsWith("runtimes", StringComparison.OrdinalIgnoreCase) && !subbasedir.StartsWith("RootExternalDLLs", StringComparison.OrdinalIgnoreCase) && subbasedir.ToLower().IndexOf("printboxno") == -1)
                             {
                                 isexclude = true;
                                 foreach (var item in excludeBaseDir)

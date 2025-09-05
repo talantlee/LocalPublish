@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -53,12 +54,13 @@ namespace AutoLocalPublish
             }
             try
             {
-                using (var sha256 = System.Security.Cryptography.SHA256.Create())
-                using (var stream = File.OpenRead(filePath))
+                using (var md5 = MD5.Create())
                 {
-                    byte[] hashBytes = sha256.ComputeHash(stream);
-                    string actualHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
-                    return actualHash;
+                    using (var stream = File.OpenRead(filePath))
+                    {
+                        byte[] hashBytes = md5.ComputeHash(stream);
+                        return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+                    }
                 }
             }
             catch (Exception ex)

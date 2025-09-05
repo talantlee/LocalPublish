@@ -46,7 +46,7 @@ namespace AutoLocalPublish
             "System.Reflection.Metadata.dll", "System.Runtime.CompilerServices.Unsafe.dll", "System.Security.Cryptography.Pkcs.dll", "System.Security.Cryptography.ProtectedData.dll",
             "System.Security.Cryptography.Xml.dll", "System.ServiceModel.Duplex.dll", "System.ServiceModel.Federation.dll", "System.ServiceModel.Http.dll", "System.ServiceModel.NetFramingBase.dll",
             "System.ServiceModel.NetTcp.dll", "System.ServiceModel.Primitives.dll", "System.ServiceModel.Security.dll", "System.Speech.dll", "System.Text.Encoding.CodePages.dll", "System.Text.Encodings.Web.dll",
-            "System.Text.Json.dll", "System.Threading.Channels.dll", "System.Threading.Tasks.Extensions.dll", "SystemFrameworks.Services.dll", "WebView2Loader.dll", "ZedGraph.dll" };
+            "System.Text.Json.dll", "System.Threading.Channels.dll", "System.Threading.Tasks.Extensions.dll", "SystemFrameworks.Services.dll", "WebView2Loader.dll", "ZedGraph.dll","Refit.dll" };
 
         //todo 先隱藏1.0版本的dll，因為可能很多用戶端可能很久沒使用，所以不希望影響舊版的功能。
         //public static readonly string[] RootExternalDLLs = new string[] { "FluentFTP.dll", "ICSharpCode.SharpZipLib.dll", "Infragistics.Base.v5.2.dll", "Infragistics.Win.UltraWinEditors.v5.2.dll", "itext.forms.dll", "itext.html2pdf.dll", "itext.io.dll", "itext.kernel.dll", "itext.layout.dll", "itext.pdfa.dll", "itext.styledxmlparser.dll", "itext.svg.dll", "MathNet.Numerics.dll",
@@ -373,6 +373,7 @@ namespace AutoLocalPublish
                                 break;
                             }
                         }
+                        //get Hash
                         needUpdateFiles.Add(fi);
 
                     }
@@ -397,7 +398,7 @@ namespace AutoLocalPublish
             //       SYS_GetNeedUpdateFiles  return db.ExecuteDatasetSqlString(sqlCommand).Tables[0];
         }
 
-     
+      
         int BroadcastAutoId = 0;
         string newVsersion = string.Empty;
         private void button4_Click(object sender, EventArgs e)
@@ -525,12 +526,13 @@ namespace AutoLocalPublish
             }
             try
             {
-                using (var sha256 = System.Security.Cryptography.SHA256.Create())
-                using (var stream = File.OpenRead(filePath))
+                using (var md5 = MD5.Create())
                 {
-                    byte[] hashBytes = sha256.ComputeHash(stream);
-                    string actualHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
-                    return actualHash;
+                    using (var stream = File.OpenRead(filePath))
+                    {
+                        byte[] hashBytes =  md5.ComputeHash(stream);
+                        return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+                    }
                 }
             }
             catch(Exception ex)
@@ -540,7 +542,7 @@ namespace AutoLocalPublish
                 
             }
         }
-
+  
         private void button5_Click(object sender, EventArgs e)
         {
 
@@ -1008,6 +1010,7 @@ namespace AutoLocalPublish
         public long FileSize { get; set; }
 
         public bool isChanged { get; set; }
+        
         public ReleaseFileInfo(string fullpath, string fpath, string fname, long fdate, long fileSize)
         {
             FilePath = fpath;

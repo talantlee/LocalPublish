@@ -182,6 +182,7 @@ namespace AutoLocalPublish
         bool isbackupsuccess = false;
         private void button3_Click(object sender, EventArgs e)
         {
+            this.lbl_vertify.ForeColor = Color.Black;
             BroadcastAutoId = 0;
             isbackupsuccess = false;
             needUpdateFiles = new List<ReleaseFileInfo>();
@@ -517,7 +518,22 @@ namespace AutoLocalPublish
                 MessageBox.Show("沒檢測到任何文件的變動。");
             }
         }
+        public void WriteLog(string mess)
+        {
+            string userpath = System.IO.Path.Combine(System.Environment.CurrentDirectory, System.Environment.UserName);
+            if (!Directory.Exists(userpath))
+            {
+                Directory.CreateDirectory(userpath);
+            }
 
+            using (StreamWriter sw = new StreamWriter(Path.Combine(userpath, "UpdateTips.txt"), true, Encoding.UTF8))
+            {
+
+                sw.WriteLine(System.DateTime.UtcNow + "=>" + mess);
+                sw.Flush();
+                sw.Close();
+            }
+        }
         public static string GetFileIntegrity(string filePath)
         {
             if (AppConfig.HashCompare != "1")
@@ -822,7 +838,7 @@ namespace AutoLocalPublish
                     MessageBox.Show($"已經發佈過此版本。{BroadcastAutoIdLast}");
                     return;
                 }
-
+                WriteLog($"publish version.[{newVsersion}] By {System.Environment.UserName}  BroadcastAutoId={BroadcastAutoId}");
                 foreach (ReleaseFileInfo fi in needUpdateFiles)
                 {
                     if (fi.isChanged)
@@ -851,6 +867,7 @@ namespace AutoLocalPublish
                                     System.IO.File.Copy(fi.TrueFilePath, todir + "\\" + fi.FileName, true);
                                 }catch(Exception ex1)
                                 {
+                                    WriteLog($"publish version.[{newVsersion}] RemoveReadOnly File.Copy=>{todir + "\\" + fi.FileName} Error: {ex1.Message}");
                                     throw ex1;
                                 }
                             }
@@ -879,10 +896,14 @@ namespace AutoLocalPublish
                 model.LastActionUser = "Admin";
                 model = broadcastBLL.Confirm(model).Result;
                 this.lbl_vertify.Text = $"發佈成功。 公告號：{BroadcastAutoId}";
+                this.lbl_vertify.ForeColor = Color.Blue;
                 BroadcastAutoIdLast = BroadcastAutoId;
             }
             catch (Exception ex)
             {
+                WriteLog($"publish version.[{newVsersion}] Error: {ex.Message}");
+                this.lbl_vertify.Text = $"發佈失敗。（請登錄NMERP 進行“審批”）";
+                this.lbl_vertify.ForeColor = Color.Red;
                 MessageBox.Show(ex.ToString());
             }
             //TODO:增加移動rootdlls 功能 (下次稽核來的時候 把這個代碼打開） dagger.li 2025-08-13
@@ -922,6 +943,7 @@ namespace AutoLocalPublish
             }
             catch (Exception ex)
             {
+                WriteLog($"publish version.[{newVsersion}] Delete files {this.txt_basedif.Text} error. {ex.Message}.");
                 MessageBox.Show($"Delete files {this.txt_basedif.Text} error. {ex.Message}.");
                 return;
             }

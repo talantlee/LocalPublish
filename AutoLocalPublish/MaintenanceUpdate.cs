@@ -39,7 +39,7 @@ namespace AutoLocalPublish
             string  sqlCommand = "select * from AssemblyInfo order by fileDate desc;";
               SqlHelper db = DatabaseFactory.CreateDatabase();
             OldData = db.ExecuteDatasetSqlString(sqlCommand).Tables[0];
-
+            this.lbl_vertify.Text = $"正在驗證更新檔案...{AppConfig.PublishToDir}";
             Publish();
 
           
@@ -156,6 +156,7 @@ namespace AutoLocalPublish
                 MessageBox.Show("未設置更新目錄。");
                 return;
             }
+         
             moveRootDlls(AppConfig.PublishToDir);
             //TODO:1 根目錄 只能放 exe,dll,xml,.config,.json,.runtimeconfig,ico
             string[] basenewFileList = System.IO.Directory.GetFiles(AppConfig.PublishToDir, "*.*", System.IO.SearchOption.TopDirectoryOnly);
@@ -219,9 +220,9 @@ namespace AutoLocalPublish
                 if (f.IndexOf(".scc") > -1) { continue; }
                 if (f.ToLower().IndexOf(".lng") > -1) { continue; } // 不知道誰建立了一個 ChsEng.lng；
                 if (f.IndexOf(".db") > -1) { continue; }
-                if (f.IndexOf("\\ref\\") > -1) { continue; }
-                if (f.IndexOf("\\logs\\") > -1) { continue; }
-                if (f.IndexOf("\\RootExternalDLLs\\") > -1) { continue; }
+                if (f.IndexOf("\\ref\\", StringComparison.OrdinalIgnoreCase) > -1) { continue; }
+                if (f.IndexOf("\\logs\\", StringComparison.OrdinalIgnoreCase) > -1) { continue; }
+                if (f.IndexOf("\\RootExternalDLLs\\",StringComparison.OrdinalIgnoreCase) > -1) { continue; }
                 //   if (f.IndexOf("\\runtimes\\") > -1) {
 
                 //win-x64,win-x86,win-arm64,
@@ -246,7 +247,7 @@ namespace AutoLocalPublish
 
                 FileInfo fi = new FileInfo(f);
                 //Special Dir
-                if (f.IndexOf("\\RootExternalDLLs\\") > -1) 
+                if (f.IndexOf("\\RootExternalDLLs\\", StringComparison.OrdinalIgnoreCase) > -1) 
                 {
                     //判斷是否已經存在，如果存在，則比較時間，如果時間比較新，則覆蓋。
                     bool isFindInBase = false;
@@ -279,7 +280,7 @@ namespace AutoLocalPublish
             }
             //RootExternalDLLs 處理
             string[] rootFileList = System.IO.Directory.GetFiles(Path.Combine(AppConfig.PublishToDir, "RootExternalDLLs"), "*.*", System.IO.SearchOption.TopDirectoryOnly);
-            foreach (string f in newFileList)
+            foreach (string f in rootFileList)
             {
                 FileInfo fi = new FileInfo(f);
                 bool isFindInBase = false;
@@ -380,7 +381,7 @@ namespace AutoLocalPublish
                     MessageBox.Show("這些文件不允許更新到客戶端，請確認：\n" + sb.ToString());
                     return;
                 }
-
+             
 
                 if (needUpdateFiles.Count > 0)
                 {

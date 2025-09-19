@@ -192,7 +192,7 @@ namespace AutoLocalPublish
                 return;
             }
                 //TODO:1 根目錄 只能放 exe,dll,xml,.config,.json,.runtimeconfig,ico
-                string[] basenewFileList = System.IO.Directory.GetFiles(this.txt_basedif.Text, "*.*", System.IO.SearchOption.TopDirectoryOnly);
+               string[] basenewFileList = System.IO.Directory.GetFiles(this.txt_basedif.Text, "*.*", System.IO.SearchOption.TopDirectoryOnly);
             foreach (string f in basenewFileList)
             {
                 if (f.ToLower().IndexOf(".exe") > -1

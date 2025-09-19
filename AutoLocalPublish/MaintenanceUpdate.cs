@@ -36,9 +36,7 @@ namespace AutoLocalPublish
 
         private void button5_Click(object sender, EventArgs e)
         {
-            string  sqlCommand = "select * from AssemblyInfo order by fileDate desc;";
-              SqlHelper db = DatabaseFactory.CreateDatabase();
-            OldData = db.ExecuteDatasetSqlString(sqlCommand).Tables[0];
+          
             this.lbl_vertify.Text = $"正在驗證更新檔案...{AppConfig.PublishToDir}";
             Publish();
 
@@ -192,7 +190,9 @@ namespace AutoLocalPublish
                 sb.Length = 0;
                 return;
             }
-
+       
+            SqlHelper db1 = DatabaseFactory.CreateDatabase();
+            OldData = db1.ExecuteDatasetSqlString("select * from AssemblyInfo order by fileDate desc;").Tables[0];
             //check files.
             string[] newFileList = System.IO.Directory.GetFiles(AppConfig.PublishToDir, "*.*", System.IO.SearchOption.AllDirectories);
             this.listView1.Items.Clear();
@@ -278,6 +278,7 @@ namespace AutoLocalPublish
                
 
             }
+         
             //RootExternalDLLs 處理
             string[] rootFileList = System.IO.Directory.GetFiles(Path.Combine(AppConfig.PublishToDir, "RootExternalDLLs"), "*.*", System.IO.SearchOption.TopDirectoryOnly);
             foreach (string f in rootFileList)
@@ -303,13 +304,13 @@ namespace AutoLocalPublish
                 }
             }
 
-
+          
             if (newFileData.Count > 0)
             {
                
                 foreach (ReleaseFileInfo fi in newFileData)
                 {
-
+                 
                     foreach (DataRow dr in OldData.Rows)
                     {
                         if (dr["AssemblyPath"].ToString().Equals(fi.FilePath.Replace("/","\\"), StringComparison.OrdinalIgnoreCase))
@@ -324,9 +325,10 @@ namespace AutoLocalPublish
                         }
                     }
                     if(fi.isChanged)
-                    needUpdateFiles.Add(fi);
-
+                        needUpdateFiles.Add(fi);
                 }
+                WriteLog($"正在比對檔案...需要更新的文件數:{needUpdateFiles.Count}");
+
                 foreach (ReleaseFileInfo fi in needUpdateFiles)
                 {
                     bool isexclude = false;
@@ -367,6 +369,8 @@ namespace AutoLocalPublish
                     }
                     this.listView1.Items.Add(new ListViewItem(new string[] { fi.FilePath, fi.FileDate.ToString(), fi.isChanged ? "change" : "no change" }));
                 }
+
+                WriteLog($"正在比對檔案...需要更新的文件數3:{needUpdateFiles.Count}");
                 if (!needUpdateFiles.ToList<ReleaseFileInfo>().Any(att => att.isChanged))
                 //  if (needUpdateFiles.Count == 0)
                 {
@@ -456,7 +460,6 @@ namespace AutoLocalPublish
             
 
             }
-
 
             PublishToServer();
 

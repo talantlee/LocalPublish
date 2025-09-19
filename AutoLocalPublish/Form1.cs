@@ -1032,7 +1032,9 @@ namespace AutoLocalPublish
         public long FileSize { get; set; }
 
         public bool isChanged { get; set; }
-        
+
+        public string FileIdentity { get; set; }
+
         public ReleaseFileInfo(string fullpath, string fpath, string fname, long fdate, long fileSize)
         {
             FilePath = fpath;
@@ -1041,6 +1043,7 @@ namespace AutoLocalPublish
             isChanged = true;
             TrueFilePath = fullpath;
             FileSize = fileSize;
+          
         }
     }
 }

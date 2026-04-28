@@ -93,17 +93,31 @@ namespace AutoLocalPublish
                     this.tbx_publishdir.Text = AppConfig.PublishToDir+"\\";
                 }
             }
-                
-
-    
 
 
-            this.lbl_vertify.Text = $"當前版本號為：{currentVersion}";
+
+
+
+            setMessage( $"當前版本號為：{currentVersion}");
 
         }
         private void BackUpVersions()
         {
 
+        }
+
+        private void setMessage(string mess)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() =>
+                {
+                    this.lbl_vertify.Text = mess;
+                }));
+            }else
+            {
+                this.lbl_vertify.Text = mess;
+            }
         }
 
         public void SaveConfig()
@@ -385,7 +399,7 @@ namespace AutoLocalPublish
                     if(!needUpdateFiles.ToList<ReleaseFileInfo>().Any(att => att.isChanged))
                   //  if (needUpdateFiles.Count == 0)
                     {
-                        this.lbl_vertify.Text = "沒有文件需要更新2。";
+                        setMessage("沒有文件需要更新2。");
                     }
 
 
@@ -408,7 +422,7 @@ namespace AutoLocalPublish
             if (!needUpdateFiles.ToList<ReleaseFileInfo>().Any(att => att.isChanged))
             //  if (needUpdateFiles.Count == 0)
             {
-                this.lbl_vertify.Text = "1.沒有文件需要更新。";
+                setMessage("1.沒有文件需要更新。");
                 return;
             }
             isbackupsuccess = false;
@@ -487,7 +501,7 @@ namespace AutoLocalPublish
 
                             BroadcastAutoId = Convert.ToInt32(db.ExecuteScalar(tran, "Broadcast_Edit", 0, newVsersion, "Upgrade", "", "ALL", "Admin", "N", "updates"));
                             tran.Commit();
-                            this.lbl_vertify.Text = $"已經產生版本號的數據。公告號為: {BroadcastAutoId}";
+                            setMessage($"已經產生版本號的數據。公告號為: {BroadcastAutoId}");
                             //this.progressBar1.Value = 1;
                             //if (UploadFiles("192.168.88.53", "NMErpUpdate", "Nien123ErpUp", needUpdateFiles))
                             //{
@@ -650,7 +664,7 @@ namespace AutoLocalPublish
             }
             if (errfile.Length > 0)
             {
-                this.lbl_vertify.Text = "有一些文件沒有上傳成功，請重新更新=>" + errfile;
+                setMessage("有一些文件沒有上傳成功，請重新更新=>" + errfile);
 
                 return false;
 
@@ -805,9 +819,12 @@ namespace AutoLocalPublish
                     opt.Database = 3;
                 });
             }
-          
-            // _clientbuilder.UseLocalhostClustering();
-            return _clientbuilder;
+            _clientbuilder.AddClusterConnectionLostHandler((sender, evt) =>
+             {
+                 connectedSuccess = false;
+             });
+                 // _clientbuilder.UseLocalhostClustering();
+                 return _clientbuilder;
 
         }
 
@@ -895,15 +912,15 @@ namespace AutoLocalPublish
                 model.LastActionCode = "A";
                 model.LastActionUser = "Admin";
                 model = broadcastBLL.Confirm(model).Result;
-                this.lbl_vertify.Text = $"發佈成功。 公告號：{BroadcastAutoId}";
+                setMessage($"發佈成功。 公告號：{BroadcastAutoId}");
                 this.lbl_vertify.ForeColor = Color.Blue;
                 BroadcastAutoIdLast = BroadcastAutoId;
             }
             catch (Exception ex)
             {
                 WriteLog($"publish version.[{newVsersion}] Error: {ex.Message}");
-                this.lbl_vertify.Text = $"發佈失敗。（請登錄NMERP 進行“審批”）";
-                this.lbl_vertify.ForeColor = Color.Red;
+                setMessage($"發佈失敗。（請登錄NMERP 進行“審批”）");
+         
                 MessageBox.Show(ex.ToString());
             }
             //TODO:增加移動rootdlls 功能 (下次稽核來的時候 把這個代碼打開） dagger.li 2025-08-13
@@ -969,7 +986,8 @@ namespace AutoLocalPublish
                             }
                             rollcheck--;
                         }
-                    this.lbl_vertify.Text = $"發佈成功。 公告號：{BroadcastAutoId} ，執行{AppConfig.CopyToBackUpServer}完成。";
+                    setMessage($"發佈成功。 公告號：{BroadcastAutoId} ，執行{AppConfig.CopyToBackUpServer}完成。");
+              //  this.lbl_vertify.Text = $"發佈成功。 公告號：{BroadcastAutoId} ，執行{AppConfig.CopyToBackUpServer}完成。";
                 }
             }
           

@@ -158,7 +158,12 @@ namespace AutoLocalPublish
             moveRootDlls(AppConfig.PublishToDir);
             //TODO:1 根目錄 只能放 exe,dll,xml,.config,.json,.runtimeconfig,ico
             string[] basenewFileList = System.IO.Directory.GetFiles(AppConfig.PublishToDir, "*.*", System.IO.SearchOption.TopDirectoryOnly);
-          
+            if (basenewFileList?.Length == 0)
+            {
+                MessageBox.Show("更新目錄沒有文件。");
+                return;
+            }
+
             StringBuilder sb = new StringBuilder();
             foreach (string f in basenewFileList)
             {
@@ -416,6 +421,8 @@ namespace AutoLocalPublish
                                             if (oldver > 0)
                                             {
                                                 WriteLog($"Already has one not publish version.[{ver}]");
+                                                MessageBox.Show("已清除上一次發佈異常殘留，請重新發佈一次。");
+                                                return;
                                             }
                                             else
                                             {

@@ -33,22 +33,22 @@
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.button2 = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.label1 = new System.Windows.Forms.Label();
             this.listView1 = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.panel2 = new System.Windows.Forms.Panel();
+            this.tbx_publishdir = new System.Windows.Forms.TextBox();
             this.tbx_backupdir = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
             this.lbl_vertify = new System.Windows.Forms.Label();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.button5 = new System.Windows.Forms.Button();
+            this.button6 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
-            this.button6 = new System.Windows.Forms.Button();
-            this.label3 = new System.Windows.Forms.Label();
-            this.tbx_publishdir = new System.Windows.Forms.TextBox();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -93,6 +93,15 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(891, 50);
             this.panel1.TabIndex = 3;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(12, 23);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(120, 12);
+            this.label1.TabIndex = 9;
+            this.label1.Text = "MIS更新目錄（temp）";
             // 
             // listView1
             // 
@@ -142,6 +151,14 @@
             this.panel2.TabIndex = 5;
             this.panel2.Paint += new System.Windows.Forms.PaintEventHandler(this.panel2_Paint);
             // 
+            // tbx_publishdir
+            // 
+            this.tbx_publishdir.Location = new System.Drawing.Point(89, 110);
+            this.tbx_publishdir.Name = "tbx_publishdir";
+            this.tbx_publishdir.ReadOnly = true;
+            this.tbx_publishdir.Size = new System.Drawing.Size(607, 22);
+            this.tbx_publishdir.TabIndex = 10;
+            // 
             // tbx_backupdir
             // 
             this.tbx_backupdir.Location = new System.Drawing.Point(89, 146);
@@ -149,6 +166,15 @@
             this.tbx_backupdir.ReadOnly = true;
             this.tbx_backupdir.Size = new System.Drawing.Size(607, 22);
             this.tbx_backupdir.TabIndex = 10;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(19, 113);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(53, 12);
+            this.label3.TabIndex = 9;
+            this.label3.Text = "發佈目錄";
             // 
             // label2
             // 
@@ -159,19 +185,11 @@
             this.label2.TabIndex = 9;
             this.label2.Text = "備份目錄";
             // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 23);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(120, 12);
-            this.label1.TabIndex = 9;
-            this.label1.Text = "MIS更新目錄（temp）";
-            // 
             // lbl_vertify
             // 
             this.lbl_vertify.AutoSize = true;
             this.lbl_vertify.Font = new System.Drawing.Font("新細明體", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lbl_vertify.ForeColor = System.Drawing.Color.Crimson;
             this.lbl_vertify.Location = new System.Drawing.Point(481, 60);
             this.lbl_vertify.Name = "lbl_vertify";
             this.lbl_vertify.Size = new System.Drawing.Size(0, 22);
@@ -196,6 +214,17 @@
             this.button5.UseVisualStyleBackColor = false;
             this.button5.Click += new System.EventHandler(this.button5_Click_1);
             // 
+            // button6
+            // 
+            this.button6.BackColor = System.Drawing.Color.IndianRed;
+            this.button6.Location = new System.Drawing.Point(202, 51);
+            this.button6.Name = "button6";
+            this.button6.Size = new System.Drawing.Size(242, 33);
+            this.button6.TabIndex = 0;
+            this.button6.Text = "2.刪除最新一個（未發佈）版本數據";
+            this.button6.UseVisualStyleBackColor = false;
+            this.button6.Click += new System.EventHandler(this.button6_Click_1);
+            // 
             // button4
             // 
             this.button4.BackColor = System.Drawing.SystemColors.Highlight;
@@ -216,34 +245,6 @@
             this.button3.Text = "1.比較文件";
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.button3_Click);
-            // 
-            // button6
-            // 
-            this.button6.BackColor = System.Drawing.Color.IndianRed;
-            this.button6.Location = new System.Drawing.Point(202, 51);
-            this.button6.Name = "button6";
-            this.button6.Size = new System.Drawing.Size(242, 33);
-            this.button6.TabIndex = 0;
-            this.button6.Text = "2.刪除最新一個（未發佈）版本數據";
-            this.button6.UseVisualStyleBackColor = false;
-            this.button6.Click += new System.EventHandler(this.button6_Click_1);
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(19, 113);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(53, 12);
-            this.label3.TabIndex = 9;
-            this.label3.Text = "發佈目錄";
-            // 
-            // tbx_publishdir
-            // 
-            this.tbx_publishdir.Location = new System.Drawing.Point(89, 110);
-            this.tbx_publishdir.Name = "tbx_publishdir";
-            this.tbx_publishdir.ReadOnly = true;
-            this.tbx_publishdir.Size = new System.Drawing.Size(607, 22);
-            this.tbx_publishdir.TabIndex = 10;
             // 
             // Form1
             // 

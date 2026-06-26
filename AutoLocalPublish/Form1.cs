@@ -61,6 +61,8 @@ namespace AutoLocalPublish
         }
         static List<FileAttr> exfileAttrs = new List<FileAttr>();
         public IList<string> currentUpdateFIles = new List<string>();
+        public IList<string> currentUpdateFIlesBase = new List<string>();
+
         string backupdir = string.Empty;
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -201,18 +203,10 @@ namespace AutoLocalPublish
         {
             currentUpdateFIles=new  List<string>();
 
+            currentUpdateFIlesBase=new List<string>();
 
 
-            currentUpdateFIles.Add("Test");
-            try
-            {
-                WriteCurrentUpdateFilesToExcel();
-            }
-            catch(Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-            }
-            return;
+
 
 
             this.lbl_vertify.ForeColor = Color.Black;
@@ -428,7 +422,7 @@ namespace AutoLocalPublish
             {
                 MessageBox.Show("未設置更新/備份目錄。");
             }
-           
+      
             //       SYS_GetNeedUpdateFiles  return db.ExecuteDatasetSqlString(sqlCommand).Tables[0];
         }
 
@@ -513,6 +507,9 @@ namespace AutoLocalPublish
                                     object[] para = { newVsersion, fi.FileName, fi.FilePath, fi.FileDate, false, fi.FileSize, GetFileIntegrity(fi.TrueFilePath) };
                                     db.ExecuteNonQuery(tran, "SYS_AddNeedUpdateFile", para).ToString();
                                     currentUpdateFIles.Add(fi.FilePath);
+                                    if(!fi.FilePath.Contains("\\"))
+                                        if (!fi.FilePath.Contains("/"))
+                                            currentUpdateFIlesBase.Add(fi.FileName);
                                 }
                                 if (this.progressBar1.Value < 98)
                                     this.progressBar1.Value += 1;
@@ -887,7 +884,8 @@ namespace AutoLocalPublish
                 }
                 try
                 {
-                    WriteCurrentUpdateFilesToExcel();
+                    if (currentUpdateFIlesBase != null && currentUpdateFIlesBase.Count > 0)
+                        WriteCurrentUpdateFilesToExcel();
                 }
                 catch
                 {
@@ -1058,6 +1056,7 @@ namespace AutoLocalPublish
             if (MessageBox.Show("確定要刪除最新一個未發佈的版本嗎？", "Alert", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 currentUpdateFIles.Clear();
+                currentUpdateFIlesBase.Clear();
                 sqlCommand = "declare @ver varchar(30);select @ver=Max(Version) from versions where isLive = 0;delete from versions where isLive = 0 and [Version]=isnull(@ver,0) and datediff(minute,lastactiontime,getdate())<15;if @@rowcount>0 begin delete AssemblyInfoList where [Version]=isnull(@ver,0); end else begin set @ver=0 end  select ver=isnull(@ver,0); ";
                  var ver= db.ExecuteScalarSqlString(sqlCommand);
                 if(ver!= null) { 
@@ -1139,7 +1138,7 @@ namespace AutoLocalPublish
 
             // 追加數據
             int rowIndex = sheet.LastRowNum + 1;
-            foreach (var file in currentUpdateFIles)
+            foreach (var file in currentUpdateFIlesBase)
             {
                 IRow row = sheet.CreateRow(rowIndex++);
                 row.CreateCell(0).SetCellValue(newVsersion);

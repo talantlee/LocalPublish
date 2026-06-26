@@ -36,11 +36,13 @@ namespace AutoLocalPublish
             InitializeComponent();
         }
         public IList<string> currentUpdateFIles=new  List<string>();
+        public IList<string> currentUpdateFIlesBase = new List<string>();
         private void button5_Click(object sender, EventArgs e)
         {
           
             this.lbl_vertify.Text = $"正在驗證更新檔案...{AppConfig.PublishToDir}";
             currentUpdateFIles = new List<string>();
+            currentUpdateFIlesBase=new List<string>();
             Publish();
 
           
@@ -445,7 +447,10 @@ namespace AutoLocalPublish
                                         object[] para = { newVsersion, fi.FileName, fi.FilePath, fi.FileDate, false, fi.FileSize, GetFileIntegrity(fi.TrueFilePath) };
                                         db.ExecuteNonQuery(tran, "SYS_AddNeedUpdateFile", para).ToString();
                                         currentUpdateFIles.Add(fi.FilePath);
-                                      //  WriteLog($"By {System.Environment.UserName}  FileName={fi.FileName}");
+                                        if (!fi.FilePath.Contains("\\"))
+                                            if (!fi.FilePath.Contains("/"))
+                                                currentUpdateFIlesBase.Add(fi.FileName);
+                                        //  WriteLog($"By {System.Environment.UserName}  FileName={fi.FileName}");
                                     }
                                     if (this.progressBar1.Value < 98)
                                         this.progressBar1.Value += 1;
@@ -533,13 +538,13 @@ namespace AutoLocalPublish
                 IRow header = sheet.CreateRow(0);
                 header.CreateCell(0).SetCellValue("Version");
                 header.CreateCell(1).SetCellValue("User");
-                header.CreateCell(2).SetCellValue("FilePath");
+                header.CreateCell(2).SetCellValue("FileName");
                 header.CreateCell(3).SetCellValue("UpdateDate");
             }
 
             // 追加數據
             int rowIndex = sheet.LastRowNum + 1;
-            foreach (var file in currentUpdateFIles)
+            foreach (var file in currentUpdateFIlesBase)
             {
                 IRow row = sheet.CreateRow(rowIndex++);
                 row.CreateCell(0).SetCellValue(newVsersion);
@@ -605,7 +610,8 @@ namespace AutoLocalPublish
                 }
                 try
                 {
-                    WriteCurrentUpdateFilesToExcel();
+                    if (currentUpdateFIlesBase != null && currentUpdateFIlesBase.Count > 0)
+                        WriteCurrentUpdateFilesToExcel();
                 }
                 catch
                 {

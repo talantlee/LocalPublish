@@ -21,6 +21,8 @@ using BusinessFacade;
 using System.Runtime.ConstrainedExecution;
 using System.Net;
 using System.Diagnostics;
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
 
 namespace AutoLocalPublish
 {
@@ -58,6 +60,7 @@ namespace AutoLocalPublish
             InitializeComponent();
         }
         static List<FileAttr> exfileAttrs = new List<FileAttr>();
+        public IList<string> currentUpdateFIles = new List<string>();
         string backupdir = string.Empty;
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -196,6 +199,22 @@ namespace AutoLocalPublish
         bool isbackupsuccess = false;
         private void button3_Click(object sender, EventArgs e)
         {
+            currentUpdateFIles=new  List<string>();
+
+
+
+            currentUpdateFIles.Add("Test");
+            try
+            {
+                WriteCurrentUpdateFilesToExcel();
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            return;
+
+
             this.lbl_vertify.ForeColor = Color.Black;
             BroadcastAutoId = 0;
             isbackupsuccess = false;
@@ -479,7 +498,8 @@ namespace AutoLocalPublish
                         IDbTransaction tran = connection.BeginTransaction();
                         try
                         {
-                            newVsersion = db.ExecuteScalar(tran, "Versions_Edit", 0, "發佈器自動產生", "mis", "N", "updates").ToString();
+                            string userid = System.Environment.UserDomainName + "\\" + System.Environment.UserName;
+                            newVsersion = db.ExecuteScalar(tran, "Versions_Edit", 0, "發佈器自動產生", userid, "N", "updates").ToString();
                             if (newVsersion == "-1")
                             {
                                 MessageBox.Show("已經有一個版本未上線，請先上線上一個版本 或 刪除上一個未上線版本，再繼續發佈新版。");
@@ -492,6 +512,7 @@ namespace AutoLocalPublish
                                 {
                                     object[] para = { newVsersion, fi.FileName, fi.FilePath, fi.FileDate, false, fi.FileSize, GetFileIntegrity(fi.TrueFilePath) };
                                     db.ExecuteNonQuery(tran, "SYS_AddNeedUpdateFile", para).ToString();
+                                    currentUpdateFIles.Add(fi.FilePath);
                                 }
                                 if (this.progressBar1.Value < 98)
                                     this.progressBar1.Value += 1;
@@ -499,7 +520,7 @@ namespace AutoLocalPublish
 
                             }
 
-                            BroadcastAutoId = Convert.ToInt32(db.ExecuteScalar(tran, "Broadcast_Edit", 0, newVsersion, "Upgrade", "", "ALL", "Admin", "N", "updates"));
+                            BroadcastAutoId = Convert.ToInt32(db.ExecuteScalar(tran, "Broadcast_Edit", 0, newVsersion, "Upgrade", "", "ALL", userid, "N", "updates"));
                             tran.Commit();
                             setMessage($"已經產生版本號的數據。公告號為: {BroadcastAutoId}");
                             //this.progressBar1.Value = 1;
@@ -534,7 +555,7 @@ namespace AutoLocalPublish
         }
         public void WriteLog(string mess)
         {
-            string userpath = System.IO.Path.Combine(System.Environment.CurrentDirectory, System.Environment.UserName);
+            string userpath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, System.Environment.UserName);
             if (!Directory.Exists(userpath))
             {
                 Directory.CreateDirectory(userpath);
@@ -855,7 +876,23 @@ namespace AutoLocalPublish
                     MessageBox.Show($"已經發佈過此版本。{BroadcastAutoIdLast}");
                     return;
                 }
-                WriteLog($"publish version.[{newVsersion}] By {System.Environment.UserName}  BroadcastAutoId={BroadcastAutoId}");
+                WriteLog($"publish version.[{newVsersion}] By {System.Environment.UserName}  BroadcastAutoId={BroadcastAutoId} currentUpdateFIles={currentUpdateFIles?.Count}");
+
+                if (currentUpdateFIles != null && currentUpdateFIles.Count > 0)
+                {
+                    foreach (var item in currentUpdateFIles)
+                    {
+                        WriteLog($"File={item}");
+                    }
+                }
+                try
+                {
+                    WriteCurrentUpdateFilesToExcel();
+                }
+                catch
+                {
+
+                }
                 foreach (ReleaseFileInfo fi in needUpdateFiles)
                 {
                     if (fi.isChanged)
@@ -884,7 +921,7 @@ namespace AutoLocalPublish
                                     System.IO.File.Copy(fi.TrueFilePath, todir + "\\" + fi.FileName, true);
                                 }catch(Exception ex1)
                                 {
-                                    WriteLog($"publish version.[{newVsersion}] RemoveReadOnly File.Copy=>{todir + "\\" + fi.FileName} Error: {ex1.Message}");
+                                   // WriteLog($"publish version.[{newVsersion}] RemoveReadOnly File.Copy=>{todir + "\\" + fi.FileName} Error: {ex1.Message}");
                                     throw ex1;
                                 }
                             }
@@ -900,7 +937,7 @@ namespace AutoLocalPublish
                 ver.OldLastActionTime = ver.LastActionTime;
                 ver.OldLastActionUser = ver.LastActionUser;
                 ver.LastActionCode = "A";
-                ver.LastActionUser = "Admin";
+                ver.LastActionUser =System.Environment.UserDomainName+"\\"+System.Environment.UserName;
                 ver.isLive = true;
                 ver = versionsBLL.Confirm(ver).Result;
 
@@ -910,7 +947,7 @@ namespace AutoLocalPublish
                 model.OldLastActionTime = model.LastActionTime;
                 model.OldLastActionUser = model.LastActionUser;
                 model.LastActionCode = "A";
-                model.LastActionUser = "Admin";
+                model.LastActionUser = System.Environment.UserDomainName + "\\" + System.Environment.UserName;
                 model = broadcastBLL.Confirm(model).Result;
                 setMessage($"發佈成功。 公告號：{BroadcastAutoId}");
                 this.lbl_vertify.ForeColor = Color.Blue;
@@ -1014,12 +1051,13 @@ namespace AutoLocalPublish
 
         private void button6_Click_1(object sender, EventArgs e)
         {
+         
             SqlHelper db = DatabaseFactory.CreateDatabase();
 
             string sqlCommand = "";
             if (MessageBox.Show("確定要刪除最新一個未發佈的版本嗎？", "Alert", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-
+                currentUpdateFIles.Clear();
                 sqlCommand = "declare @ver varchar(30);select @ver=Max(Version) from versions where isLive = 0;delete from versions where isLive = 0 and [Version]=isnull(@ver,0) and datediff(minute,lastactiontime,getdate())<15;if @@rowcount>0 begin delete AssemblyInfoList where [Version]=isnull(@ver,0); end else begin set @ver=0 end  select ver=isnull(@ver,0); ";
                  var ver= db.ExecuteScalarSqlString(sqlCommand);
                 if(ver!= null) { 
@@ -1039,6 +1077,90 @@ namespace AutoLocalPublish
                 MessageBox.Show("沒有版本需要刪除。");
 
             }
+        }
+
+        private void WriteCurrentUpdateFilesToExcel()
+        {
+            string baseFileName = "updatefiles.xlsx";
+            string userpath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, System.Environment.UserName);
+            if (!Directory.Exists(userpath))
+            {
+                Directory.CreateDirectory(userpath);
+            }
+            string fileName = baseFileName;
+
+            string filePath = Path.Combine(userpath, fileName);
+
+            IWorkbook workbook = null;
+            ISheet sheet = null;
+            FileStream fs = null;
+            bool fileExists = File.Exists(filePath);
+            bool fileLocked = false;
+
+            // 嘗試打開現有文件
+            if (fileExists)
+            {
+                try
+                {
+                    fs = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                    workbook = new XSSFWorkbook(fs);
+                }
+                catch (IOException)
+                {
+                    // 文件被佔用，創建新文件
+                    fileLocked = true;
+                    fileName = $"updatefiles{DateTime.Now:yyyyMMdd}.xlsx";
+                    filePath = Path.Combine(userpath, fileName);
+                    workbook = new XSSFWorkbook();
+                }
+            }
+            else
+            {
+                workbook = new XSSFWorkbook();
+            }
+
+            // 取得或創建sheet
+            sheet = workbook.NumberOfSheets > 0 ? workbook.GetSheetAt(0) : workbook.CreateSheet("UpdateFiles");
+
+            // 找到最後一行
+            int lastRowNum = sheet.LastRowNum;
+            if (lastRowNum == 0 && sheet.GetRow(0) == null)
+                lastRowNum = -1;
+
+            // 如果是新文件，寫入標題
+            if (lastRowNum == -1)
+            {
+                IRow header = sheet.CreateRow(0);
+                header.CreateCell(0).SetCellValue("Version");
+                header.CreateCell(1).SetCellValue("User");
+                header.CreateCell(2).SetCellValue("FilePath");
+                header.CreateCell(3).SetCellValue("UpdateDate");
+            }
+
+            // 追加數據
+            int rowIndex = sheet.LastRowNum + 1;
+            foreach (var file in currentUpdateFIles)
+            {
+                IRow row = sheet.CreateRow(rowIndex++);
+                row.CreateCell(0).SetCellValue(newVsersion);
+                row.CreateCell(1).SetCellValue(System.Environment.UserName);
+                row.CreateCell(2).SetCellValue(file);
+                row.CreateCell(3).SetCellValue(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            }
+
+            // 關閉舊文件流
+            if (fs != null)
+            {
+                fs.Close();
+                fs.Dispose();
+            }
+
+            // 保存
+            using (var outFs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+            {
+                workbook.Write(outFs);
+            }
+        
         }
     }
     public class ReleaseFileInfo

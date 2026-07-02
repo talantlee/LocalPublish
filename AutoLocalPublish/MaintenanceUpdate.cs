@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -484,9 +485,57 @@ namespace AutoLocalPublish
 
 
         }
+
+        public static string getServerLocation()
+        {
+            string Ipaddress = AppConfig.HostServer;
+         
+            if (Ipaddress.IndexOf("192.168.88.") > -1 || Ipaddress.IndexOf("192.168.89.") > -1 || Ipaddress.IndexOf("192.168.90.") > -1 || Ipaddress.IndexOf("192.168.91.") > -1 || Ipaddress.IndexOf("192.168.176.") > -1)
+            {
+                return "ZF";
+            }
+            else if (Ipaddress.IndexOf("192.168.4.") > -1 || Ipaddress.IndexOf("192.168.5.") > -1 || Ipaddress.IndexOf("192.168.6.") > -1 || Ipaddress.IndexOf("192.168.7.") > -1
+            || Ipaddress.IndexOf("192.168.8.") > -1 || Ipaddress.IndexOf("192.168.9.") > -1 || Ipaddress.IndexOf("192.168.10.") > -1)
+            {
+                return "FC";
+            }
+            else if (Ipaddress.IndexOf("192.168.148.") > -1 || Ipaddress.IndexOf("192.168.149.") > -1 || Ipaddress.IndexOf("192.168.150.") > -1 || Ipaddress.IndexOf("192.168.151.") > -1)
+            {
+                return "YF";
+            }
+            else if (Ipaddress.IndexOf("192.168.112.") > -1 || Ipaddress.IndexOf("192.168.113.") > -1 || Ipaddress.IndexOf("192.168.114.") > -1 || Ipaddress.IndexOf("192.168.115.") > -1)
+            {
+                return "MX";
+            }
+            else if (Ipaddress.IndexOf("192.168.133.") > -1 || Ipaddress.IndexOf("192.168.134.") > -1 || Ipaddress.IndexOf("192.168.135.") > -1)
+            {
+                return "MX2";
+            }
+            else if (Ipaddress.IndexOf("192.168.188.") > -1) //|| Ipaddress.IndexOf("192.168.200.") > -1
+            {
+                return "US";
+            }
+            else if (Ipaddress.IndexOf("192.168.200.") > -1)
+            {
+                return "NIS";
+            }
+            else if (Ipaddress.IndexOf("192.168.160.") > -1 || Ipaddress.IndexOf("192.168.161.") > -1 || Ipaddress.IndexOf("192.168.162.") > -1 || Ipaddress.IndexOf("192.168.163.") > -1)
+            {
+                return "SF";
+            }
+            else if (Ipaddress.IndexOf("192.168.0.") > -1 || Ipaddress.IndexOf("192.168.1.") > -1 || Ipaddress.IndexOf("192.168.2.") > -1 || Ipaddress.IndexOf("192.168.3.") > -1)
+            {
+                return "TW";
+            }
+            else if (Ipaddress.IndexOf("192.168.168.") > -1 || Ipaddress.IndexOf("192.168.169.") > -1 || Ipaddress.IndexOf("192.168.170.") > -1 || Ipaddress.IndexOf("192.168.171.") > -1)
+            {
+                return "WL";
+            }
+            return "UnKnow";
+        }
         private void WriteCurrentUpdateFilesToExcel()
         {
-            string baseFileName = "updatefiles.xlsx";
+            string baseFileName = "NMERP-"+MaintenanceUpdate.getServerLocation()+ ".xlsx";
             string userpath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, System.Environment.UserName);
             if (!Directory.Exists(userpath))
             {
@@ -550,7 +599,7 @@ namespace AutoLocalPublish
                 row.CreateCell(0).SetCellValue(newVsersion);
                 row.CreateCell(1).SetCellValue(System.Environment.UserName);
                 row.CreateCell(2).SetCellValue(file);
-                row.CreateCell(3).SetCellValue(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                row.CreateCell(3).SetCellValue(Form1.GetChinaTime().ToString("yyyy-MM-dd HH:mm:ss"));
             }
 
             // 關閉舊文件流

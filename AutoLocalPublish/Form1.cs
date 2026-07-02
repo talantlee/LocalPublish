@@ -201,6 +201,7 @@ namespace AutoLocalPublish
         bool isbackupsuccess = false;
         private void button3_Click(object sender, EventArgs e)
         {
+          
             currentUpdateFIles=new  List<string>();
 
             currentUpdateFIlesBase=new List<string>();
@@ -1028,7 +1029,18 @@ namespace AutoLocalPublish
           
             //CopyToBackUpServer
         }
+        public static DateTime GetChinaTime()
+        {
+            // 1. 獲取 UTC 時間（UTC 時間在任何機器上都是絕對一致的，不受本地時區影響）
+            DateTime utcNow = DateTime.UtcNow;
 
+            // 2. 定義中國標準時區 (UTC+08:00)
+            // "China Standard Time" 是 Windows 系統內置的標準時區 ID
+            TimeZoneInfo chinaZone = TimeZoneInfo.FindSystemTimeZoneById("China Standard Time");
+
+            // 3. 將 UTC 時間轉換為中國時間並返回
+            return TimeZoneInfo.ConvertTimeFromUtc(utcNow, chinaZone);
+        }
         private bool RemoveReadOnly(string path)
         {
             FileAttributes attributes = File.GetAttributes(path);
@@ -1080,7 +1092,7 @@ namespace AutoLocalPublish
 
         private void WriteCurrentUpdateFilesToExcel()
         {
-            string baseFileName = "updatefiles.xlsx";
+            string baseFileName = "NMERP-" + MaintenanceUpdate.getServerLocation() + ".xlsx";
             string userpath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, System.Environment.UserName);
             if (!Directory.Exists(userpath))
             {
@@ -1144,7 +1156,7 @@ namespace AutoLocalPublish
                 row.CreateCell(0).SetCellValue(newVsersion);
                 row.CreateCell(1).SetCellValue(System.Environment.UserName);
                 row.CreateCell(2).SetCellValue(file);
-                row.CreateCell(3).SetCellValue(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                row.CreateCell(3).SetCellValue(GetChinaTime().ToString("yyyy-MM-dd HH:mm:ss"));
             }
 
             // 關閉舊文件流

@@ -626,6 +626,22 @@ namespace AutoLocalPublish
     
             try
             {
+                try
+                {
+                    this.progressBar1.Style = ProgressBarStyle.Marquee;
+                    this.progressBar1.MarqueeAnimationSpeed = 30;
+                    this.progressBar1.Value = 0;
+                    this.progressBar1.Refresh();
+                }
+                catch
+                {
+                    // 忽略設定 UI 時的小錯誤，繼續執行原邏輯
+                }
+                //todo 檢查是否需要備份
+                if (CopyToBackUpServer()==false)
+                {
+                    return;
+                }
                 string userid = System.Environment.UserDomainName + "\\" + System.Environment.UserName;
 
                 IVersions versionsBLL = Form1._client.GetGrain<IVersions>(0);
@@ -674,35 +690,69 @@ namespace AutoLocalPublish
                 this.listView1.Items.Clear();
 
                 //Run Bat.File
-                if (!string.IsNullOrEmpty(AppConfig.CopyToBackUpServer))
-                {
-                    if (System.IO.File.Exists(AppConfig.CopyToBackUpServer))
-                    {
-
-                        var usererp = new System.Diagnostics.ProcessStartInfo(AppConfig.CopyToBackUpServer);
-                        usererp.CreateNoWindow = true;
-                        var p = new Process();
-                        p.StartInfo = usererp;
-                        p.Start();
-                        int rollcheck = 8;
-                        while (rollcheck > 0)
-                        {
-                            if (p.WaitForExit(2000))
-                            {
-                                break;
-                            }
-                            rollcheck--;
-                        }
-                        this.lbl_vertify.Text = $"發佈成功。 公告號：{BroadcastAutoId} ，執行{AppConfig.CopyToBackUpServer}完成。";
-                    }
-                }
+           
 
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
             }
+            try
+            {
+                this.progressBar1.Style = ProgressBarStyle.Blocks;
+                this.progressBar1.MarqueeAnimationSpeed = 0;
+                this.progressBar1.Value = this.progressBar1.Maximum;
+                this.progressBar1.Refresh();
+            }
+            catch
+            {
+                // 忽略 UI 更新錯誤
+            }
+        }
 
+        public bool CopyToBackUpServer()
+        {
+            if (!string.IsNullOrEmpty(AppConfig.CopyToBackUpServer))
+            {
+                if (System.IO.File.Exists(AppConfig.CopyToBackUpServer))
+                {
+
+                    var usererp = new System.Diagnostics.ProcessStartInfo(AppConfig.CopyToBackUpServer);
+                    usererp.CreateNoWindow = true;
+                    usererp.UseShellExecute = false;
+                    var p = new Process();
+                    p.StartInfo = usererp;
+                    p.Start();
+                    bool finishedInTime = p.WaitForExit(60000);
+                    if (!finishedInTime)
+                    {
+                        // 3. 【关键】超时未完成的处理逻辑！
+                        // 绝对不能直接显示“成功”，应该强制结束并报错
+                        try
+                        {
+                            if (!p.HasExited) p.Kill(); // 强制杀死卡死的进程
+                        }
+                        catch { /* 忽略杀死进程时的异常 */ }
+
+                        this.lbl_vertify.Text = $"發佈失敗：執行 {AppConfig.CopyToBackUpServer} 超時（超過60秒）！";
+                        return false; // 终止后续逻辑
+                    }
+                    // 4. 【关键】检查外部程序的退出码（ExitCode）
+                    // 约定：0 代表成功，非 0 代表失败
+                    if (p.ExitCode == 0)
+                    {
+                        this.lbl_vertify.Text = $"發佈成功。 公告號：{BroadcastAutoId} ，執行完成。";
+                        return true;
+                    }
+                    else
+                    {
+                        this.lbl_vertify.Text = $"發佈失敗：外部程序異常退出，錯誤代碼：{p.ExitCode}";
+                        return false;
+                    }
+
+                }
+            }
+            return true;
         }
 
         public void WriteLog(string mess)

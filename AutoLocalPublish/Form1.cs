@@ -856,6 +856,7 @@ namespace AutoLocalPublish
                 MessageBox.Show("沒有產生新的版本數據。");
                 return;
             }
+
             // BroadcastAutoId = 95;
             //  newVsersion = "1.02";
             //MessageBox.Show($"請到 微信“程序更新” 群，聯繫 運維同事 進行第3步的發佈！ 版本號為： \" {newVsersion.ToString()} \"    （兆豐：崔偉，任杰，億豐，泛昌：盛新民）");
@@ -867,13 +868,27 @@ namespace AutoLocalPublish
                 MessageBox.Show("沒有產生新的版本數據。");
                 return;
             }
+            if (BroadcastAutoIdLast == BroadcastAutoId)
+            {
+                MessageBox.Show($"已經發佈過此版本。{BroadcastAutoIdLast}");
+                return;
+            }
             try
             {
-                if (BroadcastAutoIdLast == BroadcastAutoId)
-                {
-                    MessageBox.Show($"已經發佈過此版本。{BroadcastAutoIdLast}");
-                    return;
-                }
+                this.progressBar1.Style = ProgressBarStyle.Marquee;
+                this.progressBar1.MarqueeAnimationSpeed = 30;
+                this.progressBar1.Value = 0;
+                this.progressBar1.Refresh();
+            }
+            catch
+            {
+                // 忽略設定 UI 時的小錯誤，繼續執行原邏輯
+            }
+
+            try
+            {
+            
+         
                 WriteLog($"publish version.[{newVsersion}] By {System.Environment.UserName}  BroadcastAutoId={BroadcastAutoId} currentUpdateFIles={currentUpdateFIles?.Count}");
 
                 if (currentUpdateFIles != null && currentUpdateFIles.Count > 0)
@@ -927,8 +942,12 @@ namespace AutoLocalPublish
                         }
                     }
                 }
+                if (CopyToBackUpServer() == false)
+                {
+                    return;
+                }
 
-            
+
 
                 IVersions versionsBLL = _client.GetGrain<IVersions>(0);
                 var ver = versionsBLL.GetModel(decimal.Parse(newVsersion)).Result;
@@ -959,6 +978,8 @@ namespace AutoLocalPublish
          
                 MessageBox.Show(ex.ToString());
             }
+
+
             //TODO:增加移動rootdlls 功能 (下次稽核來的時候 把這個代碼打開） dagger.li 2025-08-13
             //moveRootDlls(this.tbx_publishdir.Text);
            
@@ -1000,34 +1021,64 @@ namespace AutoLocalPublish
                 MessageBox.Show($"Delete files {this.txt_basedif.Text} error. {ex.Message}.");
                 return;
             }
-            //移除文件
 
-            //Run Bat.File
+
+            try
+            {
+                this.progressBar1.Style = ProgressBarStyle.Blocks;
+                this.progressBar1.MarqueeAnimationSpeed = 0;
+                this.progressBar1.Value = this.progressBar1.Maximum;
+                this.progressBar1.Refresh();
+            }
+            catch
+            {
+                // 忽略 UI 更新錯誤
+            }
+            //CopyToBackUpServer
+        }
+        public bool CopyToBackUpServer()
+        {
             if (!string.IsNullOrEmpty(AppConfig.CopyToBackUpServer))
             {
                 if (System.IO.File.Exists(AppConfig.CopyToBackUpServer))
                 {
-           
-                       var   usererp = new System.Diagnostics.ProcessStartInfo(AppConfig.CopyToBackUpServer);
-                        usererp.CreateNoWindow = true;
-                       var p = new Process();
-                        p.StartInfo = usererp; 
-                       p.Start();
-                        int rollcheck = 8;
-                        while (rollcheck > 0)
+
+                    var usererp = new System.Diagnostics.ProcessStartInfo(AppConfig.CopyToBackUpServer);
+                    usererp.CreateNoWindow = true;
+                    usererp.UseShellExecute = false;
+                    var p = new Process();
+                    p.StartInfo = usererp;
+                    p.Start();
+                    bool finishedInTime = p.WaitForExit(60000);
+                    if (!finishedInTime)
+                    {
+                        // 3. 【关键】超时未完成的处理逻辑！
+                        // 绝对不能直接显示“成功”，应该强制结束并报错
+                        try
                         {
-                            if (p.WaitForExit(2000))
-                            {
-                                break;
-                            }
-                            rollcheck--;
+                            if (!p.HasExited) p.Kill(); // 强制杀死卡死的进程
                         }
-                    setMessage($"發佈成功。 公告號：{BroadcastAutoId} ，執行{AppConfig.CopyToBackUpServer}完成。");
-              //  this.lbl_vertify.Text = $"發佈成功。 公告號：{BroadcastAutoId} ，執行{AppConfig.CopyToBackUpServer}完成。";
+                        catch { /* 忽略杀死进程时的异常 */ }
+
+                        this.lbl_vertify.Text = $"發佈失敗：執行 {AppConfig.CopyToBackUpServer} 超時（超過60秒）！";
+                        return false; // 终止后续逻辑
+                    }
+                    // 4. 【关键】检查外部程序的退出码（ExitCode）
+                    // 约定：0 代表成功，非 0 代表失败
+                    if (p.ExitCode == 0)
+                    {
+                        this.lbl_vertify.Text = $"發佈成功。 公告號：{BroadcastAutoId} ，執行完成。";
+                        return true;
+                    }
+                    else
+                    {
+                        this.lbl_vertify.Text = $"發佈失敗：外部程序異常退出，錯誤代碼：{p.ExitCode}";
+                        return false;
+                    }
+
                 }
             }
-          
-            //CopyToBackUpServer
+            return true;
         }
         public static DateTime GetChinaTime()
         {

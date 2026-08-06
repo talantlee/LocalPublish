@@ -273,6 +273,7 @@
       <DependentUpon>MaintenanceUpdate.cs</DependentUpon>
     </Compile>
     <Compile Include="Models\FileConfig.cs" />
+    <Compile Include="Models\MoveToRootList.cs" />
     <Compile Include="MoveRootForm.cs">
       <SubType>Form</SubType>
     </Compile>

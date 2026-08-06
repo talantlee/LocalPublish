@@ -60,6 +60,7 @@ namespace AutoLocalPublish
             InitializeComponent();
         }
         static List<FileAttr> exfileAttrs = new List<FileAttr>();
+        static List<string> extRootExternalDLLs = new List<string>();
         public IList<string> currentUpdateFIles = new List<string>();
         public IList<string> currentUpdateFIlesBase = new List<string>();
 
@@ -69,8 +70,8 @@ namespace AutoLocalPublish
             this.txt_basedif.Text = System.Configuration.ConfigurationManager.AppSettings.Get("LocalPublishDir");
 
             exfileAttrs = (List<FileAttr>)System.Configuration.ConfigurationManager.GetSection("FileConfig");
+            extRootExternalDLLs = (List<string>)System.Configuration.ConfigurationManager.GetSection("ToRootList");
 
-        
             SqlHelper db = DatabaseFactory.CreateDatabase();
 
             string sqlCommand = "";
@@ -165,8 +166,9 @@ namespace AutoLocalPublish
             if (RootExternalDLLs.Length > 0)
                 foreach (string f in rootFileList)
                 {
-                    if (RootExternalDLLs.Contains(Path.GetFileName(f)))
+                    if (RootExternalDLLs.Contains(Path.GetFileName(f)) || extRootExternalDLLs.Contains(Path.GetFileName(f)))
                     {
+                      
                         try
                         {
                             if (!Directory.Exists(Path.Combine(basedir, "RootExternalDLLs")))

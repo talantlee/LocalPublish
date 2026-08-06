@@ -35,6 +35,7 @@ namespace AutoLocalPublish
         public MaintenanceUpdate()
         {
             InitializeComponent();
+            this.lbl_user.Text = System.Environment.UserName;
         }
         public IList<string> currentUpdateFIles=new  List<string>();
         public IList<string> currentUpdateFIlesBase = new List<string>();
@@ -45,7 +46,7 @@ namespace AutoLocalPublish
             currentUpdateFIles = new List<string>();
             currentUpdateFIlesBase=new List<string>();
             Publish();
-
+          
           
 
 
@@ -95,7 +96,7 @@ namespace AutoLocalPublish
             if (AutoLocalPublish.Form1.RootExternalDLLs.Length > 0)
                 foreach (string f in rootFileList)
                 {
-                    if (AutoLocalPublish.Form1.RootExternalDLLs.Contains(Path.GetFileName(f)))
+                    if (AutoLocalPublish.Form1.RootExternalDLLs.Contains(Path.GetFileName(f)) || extRootExternalDLLs.Contains(Path.GetFileName(f)))
                     {
                         try
                         {
@@ -278,6 +279,7 @@ namespace AutoLocalPublish
                     {
                         ReleaseFileInfo file = new ReleaseFileInfo(f, f.Replace(AppConfig.PublishToDir + "\\", "").Replace("RootExternalDLLs\\", ""), fi.Name, fi.LastWriteTime.Ticks, fi.Length);
                         newFileData.Add(file);
+                        
                     }
                 }else
                 {
@@ -774,11 +776,12 @@ namespace AutoLocalPublish
 
 
         public DataTable OldData=new DataTable();
+        static List<string> extRootExternalDLLs = new List<string>();
         private void MaintenanceUpdate_Load(object sender, EventArgs e)
         {
 
             exfileAttrs = (List<FileAttr>)System.Configuration.ConfigurationManager.GetSection("FileConfig");
-
+            extRootExternalDLLs = (List<string>)System.Configuration.ConfigurationManager.GetSection("ToRootList");
 
             SqlHelper db = DatabaseFactory.CreateDatabase();
 

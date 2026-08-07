@@ -56,8 +56,8 @@ namespace AutoLocalPublish
                     {
                         if (File.Exists(Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f))))
                         {
-                           
-                           
+
+                            //SharpDevelop.Base.dll
                             try
                             {
                                 FileInfo file1 = new FileInfo(f);
@@ -67,21 +67,33 @@ namespace AutoLocalPublish
                                 if (file1.LastWriteTime > file2.LastWriteTime)
                                 {
                                     File.Copy(f, Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)));
-                                    this.richTextBox1.AppendText($"檔案 {Path.GetFileName(f)} 已存，但版本比較舊，已經替換  RootExternalDLLs 目錄下的文件。\n");
+                                    this.richTextBox1.AppendText($"{Path.GetFileName(f)} 已經替換  RootExternalDLLs 目錄下的文件。\n");
                                 }
                                 else
                                 {
-                                    this.richTextBox1.AppendText($"檔案 {Path.GetFileName(f)} 已存在於 RootExternalDLLs 目錄，跳過移動。\n");
+                                   // this.richTextBox1.AppendText($"{Path.GetFileName(f)} 最新文件已存在於 RootExternalDLLs 目錄,不需要移動。\n");
                                 }
 
-                                 File.Delete(f);
-                                this.richTextBox1.AppendText($"檔案 {f} 已经移除。\n");
+                            
                             }
                             catch(Exception ex)
                             {
-                                MessageBox.Show("無法移動RootExternalDLLs檔案，請確認目錄是否有權限。" + ex.Message);
+                                this.richTextBox1.AppendText($"無法移動到 RootExternalDLL {Path.GetFileName(f)} 請確認目錄是否有權限。\n");
+                               // MessageBox.Show("無法移動RootExternalDLLs檔案，請確認目錄是否有權限。" + ex.Message);
                             }
-                          
+                            try
+                            {
+                                if(Path.GetFileName(f)!="SharpDevelop.Base.dll")
+                                {
+                                    File.Delete(f);
+                                    this.richTextBox1.AppendText($"檔案 {f} 不需要移動, 已经移除。\n");
+                                }
+                             
+                            }
+                            catch(Exception ex)
+                            {
+                                this.richTextBox1.AppendText($"{Path.GetFileName(f)} 檔案刪除失敗。\n");
+                            }
                             continue;
                         }
                             try
@@ -93,7 +105,7 @@ namespace AutoLocalPublish
                                 File.Move(f, Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)));
                                 if (File.Exists(f))
                                     File.Delete(f);
-                                this.richTextBox1.AppendText($"檔案 {Path.GetFileName(f)} 移動成功。\n");
+                                this.richTextBox1.AppendText($"檔案 {Path.GetFileName(f)} 已经移除。\n");
                             }
                             catch
                             {
@@ -107,7 +119,8 @@ namespace AutoLocalPublish
                                         }
                                         catch
                                         {
-                                            MessageBox.Show("無法移動RootExternalDLLs檔案，請確認目錄是否有權限。");
+                                        this.richTextBox1.AppendText($"無法移動 {Path.GetFileName(f)} 請確認目錄是否有權限。\n");
+                                    
                                             return;
                                         }
                                     }

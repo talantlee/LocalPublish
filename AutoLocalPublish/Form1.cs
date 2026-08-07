@@ -1074,7 +1074,7 @@ namespace AutoLocalPublish
                     }
                     else
                     {
-                        this.lbl_vertify.Text = $"發佈失敗：外部程序異常退出，錯誤代碼：{p.ExitCode}";
+                        this.lbl_vertify.Text = $"發佈失敗：外部程序{AppConfig.CopyToBackUpServer}，錯誤代碼：{p.ExitCode}";
                         return false;
                     }
 

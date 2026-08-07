@@ -1,6 +1,7 @@
 ﻿using AutoLocalPublish.Models;
 using BusinessFacade;
 using DataAccessLayers;
+using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using System;
@@ -93,33 +94,52 @@ namespace AutoLocalPublish
         {
             //Move RootExternalDLLs
             string[] rootFileList = System.IO.Directory.GetFiles(basedir, "*.*", System.IO.SearchOption.TopDirectoryOnly);
+            int sepcialbasedll = 0;
             if (AutoLocalPublish.Form1.RootExternalDLLs.Length > 0)
                 foreach (string f in rootFileList)
                 {
                     if (AutoLocalPublish.Form1.RootExternalDLLs.Contains(Path.GetFileName(f)) || extRootExternalDLLs.Contains(Path.GetFileName(f)))
                     {
+                        bool dosuccess = false;
                         try
                         {
+
+
                             if (!Directory.Exists(Path.Combine(basedir, "RootExternalDLLs")))
                             {
                                 Directory.CreateDirectory(Path.Combine(basedir, "RootExternalDLLs"));
                             }
-                            if(File.Exists(Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)))){
+                            if ("SharpDevelop.Base.dll" == Path.GetFileName(f) && f.IndexOf("RootExternalDLLs") > -1)
+                            {
+                                sepcialbasedll++;
+                            }
+                            else if ("SharpDevelop.Base.dll" == Path.GetFileName(f) && f.IndexOf("RootExternalDLLs") == -1)
+                            {
+                                sepcialbasedll--;
+                            }
+
+                            if (File.Exists(Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f))))
+                            {
+
+
+
 
                                 FileInfo file1 = new FileInfo(f);
                                 FileInfo file2 = new FileInfo(Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)));
 
-                                if(file1.LastWriteTime > file2.LastWriteTime)
+                                if (file1.LastWriteTime > file2.LastWriteTime)
                                 {
                                     File.Copy(f, Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)));
                                 }
-                               
+
                             }
                             else
                             {
                                 File.Copy(f, Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)));
                             }
-                           
+
+                            dosuccess = true;
+
                         }
                         catch
                         {
@@ -135,17 +155,45 @@ namespace AutoLocalPublish
                                         {
                                             File.Copy(f, Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)));
                                         }
+                                        dosuccess = true;
                                     }
                                     catch
                                     {
-                                        MessageBox.Show("無法移動RootExternalDLLs檔案，請確認目錄是否有權限。");
+                                        MessageBox.Show($"無法移動RootExternalDLLs檔案{f}，請確認目錄是否有權限。");
                                         return;
                                     }
                                 }
                         }
+                        //delete original file
+                        try
+                        {
+                            if (dosuccess && "SharpDevelop.Base.dll" != Path.GetFileName(f))
+                                File.Delete(f);
+                        }
+                        catch
+                        {
 
+                            MessageBox.Show($"無法刪除原文件{f}。");
+                        }
                     }
                 }
+
+            if (sepcialbasedll > 0){
+                try
+                {
+                    FileInfo file1 = new FileInfo(Path.Combine(basedir, "SharpDevelop.Base.dll"));
+                    FileInfo file2 = new FileInfo(Path.Combine(basedir, "RootExternalDLLs", "SharpDevelop.Base.dll"));
+
+                    if (file1.LastWriteTime < file2.LastWriteTime)
+                    {
+                        File.Copy(file2.FullName, file1.FullName);
+                    }
+                }
+                catch
+                {
+                   
+                }
+            }
         }
         private static bool isRootExtentDll(string filename)
         {
@@ -748,7 +796,7 @@ namespace AutoLocalPublish
                     }
                     else
                     {
-                        this.lbl_vertify.Text = $"發佈失敗：外部程序異常退出，錯誤代碼：{p.ExitCode}";
+                        this.lbl_vertify.Text = $"發佈失敗：外部程序異常退出，錯誤：{AppConfig.CopyToBackUpServer}";
                         return false;
                     }
 

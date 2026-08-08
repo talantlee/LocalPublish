@@ -172,8 +172,19 @@ namespace AutoLocalPublish
                         }
                         catch
                         {
-
-                            MessageBox.Show($"無法刪除原文件{f}。");
+                            if (RemoveReadOnly(f))
+                            {
+                                try
+                                {
+                                    if (dosuccess && "SharpDevelop.Base.dll" != Path.GetFileName(f))
+                                        File.Delete(f);
+                                }catch
+                                {
+                                    MessageBox.Show($"無法刪除原文件{f}。");
+                                }
+                                  
+                            }
+                               
                         }
                     }
                 }

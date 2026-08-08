@@ -85,7 +85,8 @@ namespace AutoLocalPublish
                             {
                                 if(Path.GetFileName(f)!="SharpDevelop.Base.dll")
                                 {
-                                    File.Delete(f);
+                                    RemoveReadOnly(f);
+                                        File.Delete(f);
                                     this.richTextBox1.AppendText($"檔案 {f} 不需要移動, 已经移除。\n");
                                 }
                              
@@ -104,7 +105,11 @@ namespace AutoLocalPublish
                                 }
                                 File.Move(f, Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)));
                                 if (File.Exists(f))
+                                {
+                                    RemoveReadOnly(f);
                                     File.Delete(f);
+                                }
+                                   
                                 this.richTextBox1.AppendText($"檔案 {Path.GetFileName(f)} 已经移除。\n");
                             }
                             catch

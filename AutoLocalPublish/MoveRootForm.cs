@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DataAccessLayers;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -133,8 +134,25 @@ namespace AutoLocalPublish
 
                     }
                 }
+            SaveFileData();
         }
 
+        private void SaveFileData()
+        {
+            string basedir = textBox1.Text;
+            string[] rootFileList = System.IO.Directory.GetFiles(basedir, "*.*", System.IO.SearchOption.TopDirectoryOnly);
+            SqlHelper db = DatabaseFactory.CreateDatabase();
+            foreach (string f in rootFileList)
+            {
+                string filename = Path.GetFileName(f);
+               var fiinfo= new FileInfo(f);
+               var dt= fiinfo.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss");
+                db.ExecuteNonQuerySqlString($"INSERT INTO AssemblyInfoLastMd (AssemblyName, FileDate) VALUES (N'{filename}', '{dt}')");
+               
+
+            }
+            this.richTextBox1.AppendText($"SaveFileData Complete。\n");
+        }
         private bool RemoveReadOnly(string path)
         {
             FileAttributes attributes = File.GetAttributes(path);

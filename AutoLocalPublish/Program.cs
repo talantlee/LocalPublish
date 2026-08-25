@@ -42,7 +42,7 @@ namespace AutoLocalPublish
             {
                 AppConfig.HashCompare = "";
             }
-            Application.Run(new MoveRootForm());
+            Application.Run(new MaintenanceUpdate());
         }
     }
 }

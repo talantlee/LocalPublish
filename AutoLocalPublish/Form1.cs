@@ -48,13 +48,8 @@ namespace AutoLocalPublish
             "System.Reflection.Metadata.dll", "System.Runtime.CompilerServices.Unsafe.dll", "System.Security.Cryptography.Pkcs.dll", "System.Security.Cryptography.ProtectedData.dll",
             "System.Security.Cryptography.Xml.dll", "System.ServiceModel.Duplex.dll", "System.ServiceModel.Federation.dll", "System.ServiceModel.Http.dll", "System.ServiceModel.NetFramingBase.dll",
             "System.ServiceModel.NetTcp.dll", "System.ServiceModel.Primitives.dll", "System.ServiceModel.Security.dll", "System.Speech.dll", "System.Text.Encoding.CodePages.dll", "System.Text.Encodings.Web.dll",
-            "System.Text.Json.dll", "System.Threading.Channels.dll", "System.Threading.Tasks.Extensions.dll", "SystemFrameworks.Services.dll", "WebView2Loader.dll", "ZedGraph.dll","Refit.dll" };
-
-        //todo 先隱藏1.0版本的dll，因為可能很多用戶端可能很久沒使用，所以不希望影響舊版的功能。
-        //public static readonly string[] RootExternalDLLs = new string[] { "FluentFTP.dll", "ICSharpCode.SharpZipLib.dll", "Infragistics.Base.v5.2.dll", "Infragistics.Win.UltraWinEditors.v5.2.dll", "itext.forms.dll", "itext.html2pdf.dll", "itext.io.dll", "itext.kernel.dll", "itext.layout.dll", "itext.pdfa.dll", "itext.styledxmlparser.dll", "itext.svg.dll", "MathNet.Numerics.dll",
-        //    "Microsoft.AspNetCore.Connections.Abstractions.dll", "Microsoft.Bcl.AsyncInterfaces.dll", "Microsoft.DotNet.PlatformAbstractions.dll", "Microsoft.Extensions.Configuration.Abstractions.dll", "Microsoft.Extensions.Configuration.Binder.dll", "Microsoft.Extensions.Configuration.dll", "Microsoft.Extensions.DependencyInjection.Abstractions.dll", "Microsoft.Extensions.DependencyInjection.dll", "Microsoft.Extensions.DependencyModel.dll", "Microsoft.Extensions.Features.dll", "Microsoft.Extensions.FileProviders.Abstractions.dll", "Microsoft.Extensions.Hosting.Abstractions.dll", "Microsoft.Extensions.Logging.dll",
-        //    "Microsoft.Extensions.ObjectPool.dll", "Microsoft.Extensions.Options.ConfigurationExtensions.dll", "Microsoft.IO.RecyclableMemoryStream.dll", "Microsoft.Web.WebView2.Core.dll", "Microsoft.Web.WebView2.WinForms.dll", "Microsoft.Web.WebView2.Wpf.dll", "Newtonsoft.Json.dll", "NLog.dll", "NLog.Extensions.Logging.dll", "BouncyCastle.Crypto.dll", "BouncyCastle.Cryptography.dll", "ClosedXML.dll", "Common.Logging.Core.dll", "Common.Logging.dll", "DocumentFormat.OpenXml.dll", "Enums.NET.dll", "NPOI.Core.dll", "NPOI.OOXML.dll", "NPOI.OpenXml4Net.dll", "NPOI.OpenXmlFormats.dll", "Orleans.Clustering.Redis.dll", "Orleans.Core.Abstractions.dll", "Orleans.Core.dll", "Orleans.Runtime.Abstractions.dll", "Orleans.Runtime.dll", "OrleansProviders.dll", "Pipelines.Sockets.Unofficial.dll", "Quartz.dll", "SixLabors.Fonts.dll", "SixLabors.ImageSharp.dll", "Spire.Barcode.dll", "Spire.License.dll", "Spire.Pdf.dll", "StackExchange.Redis.dll", "Syncfusion.Compression.Base.dll", "Syncfusion.Licensing.dll", "Syncfusion.Pdf.Base.dll", "Syncfusion.PdfViewer.Windows.dll", "Syncfusion.Shared.Base.dll", "System.Configuration.ConfigurationManager.dll", "System.IO.Pipelines.dll",
-        //    "System.Security.Cryptography.Pkcs.dll", "System.Security.Cryptography.Xml.dll", "System.Text.Encodings.Web.dll", "System.Text.Json.dll", "ZedGraph.dll" };
+            "System.Text.Json.dll", "System.Threading.Channels.dll", "System.Threading.Tasks.Extensions.dll", "SystemFrameworks.Services.dll", "WebView2Loader.dll", "ZedGraph.dll","Refit.dll","Interop.Microsoft.Office.Interop.Word.dll",
+            "TouchSocket.dll","TouchSocket.Core.dll","MoDrawLib.dll","NicEntity.dll","NicFacade.dll","NIDFacade.dll","NIDEntity.dll" };
         public Form1()
         {
             InitializeComponent();
@@ -1209,7 +1204,7 @@ namespace AutoLocalPublish
                 row.CreateCell(0).SetCellValue(newVsersion);
                 row.CreateCell(1).SetCellValue(System.Environment.UserName);
                 row.CreateCell(2).SetCellValue(file);
-                row.CreateCell(3).SetCellValue(GetChinaTime().ToString("yyyy-MM-dd HH:mm:ss"));
+                row.CreateCell(3).SetCellValue(GetChinaTime().ToString("yyyy-MM-dd HH:mm"));
             }
 
             // 關閉舊文件流

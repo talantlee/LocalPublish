@@ -1204,7 +1204,7 @@ namespace AutoLocalPublish
                 row.CreateCell(0).SetCellValue(newVsersion);
                 row.CreateCell(1).SetCellValue(System.Environment.UserName);
                 row.CreateCell(2).SetCellValue(file);
-                row.CreateCell(3).SetCellValue(GetChinaTime().ToString("yyyy-MM-dd HH:mm"));
+                row.CreateCell(3).SetCellValue(GetChinaTime().ToString("yyyy-MM-dd HH:mm:ss"));
             }
 
             // 關閉舊文件流

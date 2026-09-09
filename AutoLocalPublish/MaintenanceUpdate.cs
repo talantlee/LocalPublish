@@ -31,24 +31,24 @@ namespace AutoLocalPublish
         bool isbackupsuccess = false;
         int BroadcastAutoId = 0;
         string newVsersion = string.Empty;
-      
+
         int BroadcastAutoIdLast = 0;
         public MaintenanceUpdate()
         {
             InitializeComponent();
             this.lbl_user.Text = System.Environment.UserName;
         }
-        public IList<string> currentUpdateFIles=new  List<string>();
+        public IList<string> currentUpdateFIles = new List<string>();
         public IList<string> currentUpdateFIlesBase = new List<string>();
         private void button5_Click(object sender, EventArgs e)
         {
-          
+
             this.lbl_vertify.Text = $"正在驗證更新檔案...{AppConfig.PublishToDir}";
             currentUpdateFIles = new List<string>();
-            currentUpdateFIlesBase=new List<string>();
+            currentUpdateFIlesBase = new List<string>();
             Publish();
-          
-          
+
+
 
 
         }
@@ -178,18 +178,20 @@ namespace AutoLocalPublish
                                 {
                                     if (dosuccess && "SharpDevelop.Base.dll" != Path.GetFileName(f))
                                         File.Delete(f);
-                                }catch
+                                }
+                                catch
                                 {
                                     MessageBox.Show($"無法刪除原文件{f}。");
                                 }
-                                  
+
                             }
-                               
+
                         }
                     }
                 }
 
-            if (sepcialbasedll > 0){
+            if (sepcialbasedll > 0)
+            {
                 try
                 {
                     FileInfo file1 = new FileInfo(Path.Combine(basedir, "SharpDevelop.Base.dll"));
@@ -202,7 +204,7 @@ namespace AutoLocalPublish
                 }
                 catch
                 {
-                   
+
                 }
             }
         }
@@ -213,14 +215,14 @@ namespace AutoLocalPublish
         private void Publish()
         {
             BroadcastAutoId = 0;
-        
+
             needUpdateFiles = new List<ReleaseFileInfo>();
             if (this.tbx_publishdir.Text.Length == 0)
             {
                 MessageBox.Show("未設置更新目錄。");
                 return;
             }
-         
+
             moveRootDlls(AppConfig.PublishToDir);
             //TODO:1 根目錄 只能放 exe,dll,xml,.config,.json,.runtimeconfig,ico
             string[] basenewFileList = System.IO.Directory.GetFiles(AppConfig.PublishToDir, "*.*", System.IO.SearchOption.TopDirectoryOnly);
@@ -251,17 +253,18 @@ namespace AutoLocalPublish
                 }
                 else
                 {
-                    sb.Append(f).AppendLine(); 
-                  
-                 
+                    sb.Append(f).AppendLine();
+
+
                 }
             }
-            if(sb.Length> 0) {
-                MessageBox.Show("根目錄只能存放 exe,dll,xml,.config,.json,.runtimeconfig,ico 這些文件，請確認文件目錄是否有放錯。"+sb.ToString());
+            if (sb.Length > 0)
+            {
+                MessageBox.Show("根目錄只能存放 exe,dll,xml,.config,.json,.runtimeconfig,ico 這些文件，請確認文件目錄是否有放錯。" + sb.ToString());
                 sb.Length = 0;
                 return;
             }
-       
+
             SqlHelper db1 = DatabaseFactory.CreateDatabase();
             OldData = db1.ExecuteDatasetSqlString("select * from AssemblyInfo order by fileDate desc;").Tables[0];
             //check files.
@@ -273,7 +276,8 @@ namespace AutoLocalPublish
             List<string> notAllowUpdateFiles = new List<string>();
             //todo:除了runtimes 或根目錄，其他地方不允許放置dll,exe.
             List<string> excludeBaseDir = new List<string>();
-            exfileAttrs.ForEach(attr => {
+            exfileAttrs.ForEach(attr =>
+            {
                 if (attr.OpType.ToLower() == "exclude")
                 {
                     excludeFiles.Add(attr.Key);
@@ -283,7 +287,7 @@ namespace AutoLocalPublish
                     excludeBaseDir.Add(attr.Key);
                 }
             });
-          
+
             foreach (string f in newFileList)
             {
                 if (f.IndexOf(".pdb") > -1) { continue; }
@@ -293,7 +297,7 @@ namespace AutoLocalPublish
                 if (f.IndexOf(".db") > -1) { continue; }
                 if (f.IndexOf("\\ref\\", StringComparison.OrdinalIgnoreCase) > -1) { continue; }
                 if (f.IndexOf("\\logs\\", StringComparison.OrdinalIgnoreCase) > -1) { continue; }
-                if (f.IndexOf("\\RootExternalDLLs\\",StringComparison.OrdinalIgnoreCase) > -1) { continue; }
+                if (f.IndexOf("\\RootExternalDLLs\\", StringComparison.OrdinalIgnoreCase) > -1) { continue; }
                 //   if (f.IndexOf("\\runtimes\\") > -1) {
 
                 //win-x64,win-x86,win-arm64,
@@ -318,7 +322,7 @@ namespace AutoLocalPublish
 
                 FileInfo fi = new FileInfo(f);
                 //Special Dir
-                if (f.IndexOf("\\RootExternalDLLs\\", StringComparison.OrdinalIgnoreCase) > -1) 
+                if (f.IndexOf("\\RootExternalDLLs\\", StringComparison.OrdinalIgnoreCase) > -1)
                 {
                     //判斷是否已經存在，如果存在，則比較時間，如果時間比較新，則覆蓋。
                     bool isFindInBase = false;
@@ -338,19 +342,21 @@ namespace AutoLocalPublish
                     {
                         ReleaseFileInfo file = new ReleaseFileInfo(f, f.Replace(AppConfig.PublishToDir + "\\", "").Replace("RootExternalDLLs\\", ""), fi.Name, fi.LastWriteTime.Ticks, fi.Length);
                         newFileData.Add(file);
-                        
+
                     }
-                }else
+                }
+                else
                 {
                     ReleaseFileInfo file = new ReleaseFileInfo(f, f.Replace(AppConfig.PublishToDir + "\\", ""), fi.Name, fi.LastWriteTime.Ticks, fi.Length);
+                    WriteLog($"Add:{file.FileName}=>{file.FileDate}");
                     newFileData.Add(file);
                 }
                 //  if (f.StartsWith("ErpUpdate.")) continue;
 
-               
+
 
             }
-         
+
             //RootExternalDLLs 處理
             string[] rootFileList = System.IO.Directory.GetFiles(Path.Combine(AppConfig.PublishToDir, "RootExternalDLLs"), "*.*", System.IO.SearchOption.TopDirectoryOnly);
             foreach (string f in rootFileList)
@@ -376,16 +382,16 @@ namespace AutoLocalPublish
                 }
             }
 
-          
+
             if (newFileData.Count > 0)
             {
-               
+
                 foreach (ReleaseFileInfo fi in newFileData)
                 {
-                 
+
                     foreach (DataRow dr in OldData.Rows)
                     {
-                        if (dr["AssemblyPath"].ToString().Equals(fi.FilePath.Replace("/","\\"), StringComparison.OrdinalIgnoreCase))
+                        if (dr["AssemblyPath"].ToString().Equals(fi.FilePath.Replace("/", "\\"), StringComparison.OrdinalIgnoreCase))
                         {
 
                             if (Convert.ToInt64(dr["FileDate"]) == fi.FileDate)
@@ -396,10 +402,10 @@ namespace AutoLocalPublish
                             break;
                         }
                     }
-                    if(fi.isChanged)
+                    if (fi.isChanged)
                         needUpdateFiles.Add(fi);
                 }
-               // WriteLog($"正在比對檔案...需要更新的文件數:{needUpdateFiles.Count}");
+                // WriteLog($"正在比對檔案...需要更新的文件數:{needUpdateFiles.Count}");
 
                 foreach (ReleaseFileInfo fi in needUpdateFiles)
                 {
@@ -442,7 +448,7 @@ namespace AutoLocalPublish
                     this.listView1.Items.Add(new ListViewItem(new string[] { fi.FilePath, fi.FileDate.ToString(), fi.isChanged ? "change" : "no change" }));
                 }
 
-               // WriteLog($"正在比對檔案...需要更新的文件數3:{needUpdateFiles.Count}");
+                // WriteLog($"正在比對檔案...需要更新的文件數3:{needUpdateFiles.Count}");
                 if (!needUpdateFiles.ToList<ReleaseFileInfo>().Any(att => att.isChanged))
                 //  if (needUpdateFiles.Count == 0)
                 {
@@ -479,7 +485,7 @@ namespace AutoLocalPublish
                                 {
                                     //  
 
-                                   string sqlCommand = "declare @ver varchar(30);select @ver=Max(Version) from versions where isLive = 0;delete from versions where isLive = 0 and [Version]=isnull(@ver,0) ;if @@rowcount>0 begin delete AssemblyInfoList where [Version]=isnull(@ver,0); end else begin set @ver=0 end  select ver=isnull(@ver,0); ";
+                                    string sqlCommand = "declare @ver varchar(30);select @ver=Max(Version) from versions where isLive = 0;delete from versions where isLive = 0 and [Version]=isnull(@ver,0) ;if @@rowcount>0 begin delete AssemblyInfoList where [Version]=isnull(@ver,0); end else begin set @ver=0 end  select ver=isnull(@ver,0); ";
                                     var ver = db.ExecuteScalarSqlString(sqlCommand);
                                     if (ver != null)
                                     {
@@ -494,12 +500,12 @@ namespace AutoLocalPublish
                                             else
                                             {
                                                 MessageBox.Show("已經有一個版本未上線，請先上線上一個版本 或 刪除上一個未上線版本，請重新 點 “正式發佈”.");
-                                             
+
                                                 return;
                                             }
                                         }
                                     }
-                                   
+
                                 }
 
                                 foreach (ReleaseFileInfo fi in needUpdateFiles)
@@ -523,7 +529,7 @@ namespace AutoLocalPublish
                                 BroadcastAutoId = Convert.ToInt32(db.ExecuteScalar(tran, "Broadcast_Edit", 0, newVsersion, "Upgrade", "", "ALL", userid, "N", "updates"));
                                 tran.Commit();
                                 this.lbl_vertify.Text = $"已經產生版本號的數據。公告號為: {BroadcastAutoId}";
-                            
+
                                 this.progressBar1.Value = 100;
                             }
                             catch (Exception ex)
@@ -533,10 +539,10 @@ namespace AutoLocalPublish
                             }
 
                         }
-                     
+
                     }
                 }
-            
+
 
             }
 
@@ -550,7 +556,7 @@ namespace AutoLocalPublish
         public static string getServerLocation()
         {
             string Ipaddress = AppConfig.HostServer;
-         
+
             if (Ipaddress.IndexOf("192.168.88.") > -1 || Ipaddress.IndexOf("192.168.89.") > -1 || Ipaddress.IndexOf("192.168.90.") > -1 || Ipaddress.IndexOf("192.168.91.") > -1 || Ipaddress.IndexOf("192.168.176.") > -1)
             {
                 return "ZF";
@@ -596,7 +602,7 @@ namespace AutoLocalPublish
         }
         private void WriteCurrentUpdateFilesToExcel()
         {
-            string baseFileName = "NMERP-"+MaintenanceUpdate.getServerLocation()+ ".xlsx";
+            string baseFileName = "NMERP-" + MaintenanceUpdate.getServerLocation() + ".xlsx";
             string userpath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, System.Environment.UserName);
             if (!Directory.Exists(userpath))
             {
@@ -675,7 +681,7 @@ namespace AutoLocalPublish
             {
                 workbook.Write(outFs);
             }
-           // workbook.Close();
+            // workbook.Close();
         }
         public void PublishToServer()
         {
@@ -684,7 +690,7 @@ namespace AutoLocalPublish
                 MessageBox.Show("沒有產生新的版本數據。");
                 return;
             }
-    
+
             try
             {
                 try
@@ -699,7 +705,7 @@ namespace AutoLocalPublish
                     // 忽略設定 UI 時的小錯誤，繼續執行原邏輯
                 }
                 //todo 檢查是否需要備份
-                if (CopyToBackUpServer()==false)
+                if (CopyToBackUpServer() == false)
                 {
                     return;
                 }
@@ -727,7 +733,7 @@ namespace AutoLocalPublish
                 BroadcastAutoIdLast = BroadcastAutoId;
                 WriteLog($"publish version.[{newVsersion}] By {System.Environment.UserName}  BroadcastAutoId={BroadcastAutoId}");
 
-                if(currentUpdateFIles!=null && currentUpdateFIles.Count > 0)
+                if (currentUpdateFIles != null && currentUpdateFIles.Count > 0)
                 {
                     foreach (var item in currentUpdateFIles)
                     {
@@ -751,7 +757,7 @@ namespace AutoLocalPublish
                 this.listView1.Items.Clear();
 
                 //Run Bat.File
-           
+
 
             }
             catch (Exception ex)
@@ -834,7 +840,7 @@ namespace AutoLocalPublish
         }
 
 
-        public DataTable OldData=new DataTable();
+        public DataTable OldData = new DataTable();
         static List<string> extRootExternalDLLs = new List<string>();
         private void MaintenanceUpdate_Load(object sender, EventArgs e)
         {
@@ -865,7 +871,196 @@ namespace AutoLocalPublish
                 }
             }
             this.lbl_vertify.Text = $"當前版本號為：{currentVersion}";
-       
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            moveRootDlls(AppConfig.PublishToDir);
+            SqlHelper db1 = DatabaseFactory.CreateDatabase();
+            OldData = db1.ExecuteDatasetSqlString("select * from AssemblyInfo order by fileDate desc;").Tables[0];
+            //check files.
+            string[] newFileList = System.IO.Directory.GetFiles(AppConfig.PublishToDir, "*.*", System.IO.SearchOption.AllDirectories);
+            this.listView1.Items.Clear();
+            List<ReleaseFileInfo> newFileData = new List<ReleaseFileInfo>();
+            List<string> excludeFiles = new List<string>();
+
+            List<string> notAllowUpdateFiles = new List<string>();
+            //todo:除了runtimes 或根目錄，其他地方不允許放置dll,exe.
+            List<string> excludeBaseDir = new List<string>();
+            exfileAttrs.ForEach(attr =>
+            {
+                if (attr.OpType.ToLower() == "exclude")
+                {
+                    excludeFiles.Add(attr.Key);
+                }
+                else if (attr.OpType.ToLower() == "allowsuddir")
+                {
+                    excludeBaseDir.Add(attr.Key);
+                }
+            });
+
+            foreach (string f in newFileList)
+            {
+                if (f.IndexOf(".pdb") > -1) { continue; }
+                if (f.IndexOf(".bat") > -1) { continue; }
+                if (f.IndexOf(".scc") > -1) { continue; }
+                if (f.ToLower().IndexOf(".lng") > -1) { continue; } // 不知道誰建立了一個 ChsEng.lng；
+                if (f.IndexOf(".db") > -1) { continue; }
+                if (f.IndexOf("\\ref\\", StringComparison.OrdinalIgnoreCase) > -1) { continue; }
+                if (f.IndexOf("\\logs\\", StringComparison.OrdinalIgnoreCase) > -1) { continue; }
+                if (f.IndexOf("\\RootExternalDLLs\\", StringComparison.OrdinalIgnoreCase) > -1) { continue; }
+                //   if (f.IndexOf("\\runtimes\\") > -1) {
+
+                //win-x64,win-x86,win-arm64,
+                //    continue;
+                //   }
+
+
+                if (f.IndexOf("\\StartUp.exe.WebView2\\") > -1) { continue; }
+                if (f.IndexOf("\\NMERP.exe.WebView2\\") > -1) { continue; }
+
+
+                if (f.IndexOf("\\WebView2Data\\EBWebView\\") > -1) { continue; }
+                if (f.IndexOf("\\WebView2Data\\tempfiles\\") > -1) { continue; }
+                if (f.IndexOf(".deps.json") > -1) { continue; }//dagger.li 2023-12-20
+
+
+
+                if (f.IndexOf("\\data\\UserSet\\") > -1) { continue; }
+                if (f.IndexOf("\\updated\\") > -1) { continue; }
+                if (f.IndexOf("Infragistics.") > -1 && f.IndexOf(".xml") > -1) { continue; }
+                if (f.IndexOf("defaultLoginer.xml") > -1) { continue; }
+
+                FileInfo fi = new FileInfo(f);
+                //Special Dir
+                if (f.IndexOf("\\RootExternalDLLs\\", StringComparison.OrdinalIgnoreCase) > -1)
+                {
+                    //判斷是否已經存在，如果存在，則比較時間，如果時間比較新，則覆蓋。
+                    bool isFindInBase = false;
+                    foreach (var item in newFileData)
+                    {
+                        if (item.FilePath.Equals(f.Replace(AppConfig.PublishToDir + "\\", "").Replace("RootExternalDLLs\\", "")))
+                        {
+                            if (fi.LastWriteTime.Ticks > item.FileDate)
+                            {
+                                item.FileDate = fi.LastWriteTime.Ticks;
+                            }
+                            isFindInBase = true;
+                            break;
+                        }
+                    }
+                    if (!isFindInBase)
+                    {
+                        ReleaseFileInfo file = new ReleaseFileInfo(f, f.Replace(AppConfig.PublishToDir + "\\", "").Replace("RootExternalDLLs\\", ""), fi.Name, fi.LastWriteTime.Ticks, fi.Length);
+                        newFileData.Add(file);
+
+                    }
+                }
+                else
+                {
+                    ReleaseFileInfo file = new ReleaseFileInfo(f, f.Replace(AppConfig.PublishToDir + "\\", ""), fi.Name, fi.LastWriteTime.Ticks, fi.Length);
+                    WriteLog($"Add:{file.FileName}=>{file.FileDate}");
+                    newFileData.Add(file);
+                }
+                //  if (f.StartsWith("ErpUpdate.")) continue;
+
+
+
+            }
+
+            //RootExternalDLLs 處理
+            string[] rootFileList = System.IO.Directory.GetFiles(Path.Combine(AppConfig.PublishToDir, "RootExternalDLLs"), "*.*", System.IO.SearchOption.TopDirectoryOnly);
+            foreach (string f in rootFileList)
+            {
+                FileInfo fi = new FileInfo(f);
+                bool isFindInBase = false;
+                foreach (var item in newFileData)
+                {
+                    if (item.FilePath.Equals(f.Replace(AppConfig.PublishToDir + "\\", "").Replace("RootExternalDLLs\\", "")))
+                    {
+                        if (fi.LastWriteTime.Ticks > item.FileDate)
+                        {
+                            item.FileDate = fi.LastWriteTime.Ticks;
+                        }
+                        isFindInBase = true;
+                        break;
+                    }
+                }
+                if (!isFindInBase)
+                {
+                    ReleaseFileInfo file = new ReleaseFileInfo(f, f.Replace(AppConfig.PublishToDir + "\\", "").Replace("RootExternalDLLs\\", ""), fi.Name, fi.LastWriteTime.Ticks, fi.Length);
+                    newFileData.Add(file);
+                }
+            }
+
+
+            if (newFileData.Count > 0)
+            {
+
+                foreach (ReleaseFileInfo fi in newFileData)
+                {
+
+                    foreach (DataRow dr in OldData.Rows)
+                    {
+                        if (dr["AssemblyPath"].ToString().Equals(fi.FilePath.Replace("/", "\\"), StringComparison.OrdinalIgnoreCase))
+                        {
+
+                            if (Convert.ToInt64(dr["FileDate"]) == fi.FileDate)
+                            {
+                                fi.isChanged = false;
+                                // isFined = true;
+                            }
+                            break;
+                        }
+                    }
+                    if (fi.isChanged)
+                        needUpdateFiles.Add(fi);
+                }
+                // WriteLog($"正在比對檔案...需要更新的文件數:{needUpdateFiles.Count}");
+
+                foreach (ReleaseFileInfo fi in needUpdateFiles)
+                {
+                    bool isexclude = false;
+                    foreach (var item in excludeFiles)
+                    {
+                        if (fi.FilePath.ToLower().IndexOf(item.ToLower()) > -1)
+                        {
+                            isexclude = true;
+                            break;
+                        }
+                    }
+                    if (!isexclude)
+                    {
+                        if (fi.FilePath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || fi.FilePath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // //todo:除了runtimes 或根目錄，其他地方不允許放置dll,exe.
+                            var subbasedir = fi.FilePath.Replace("/", "\\").Replace(AppConfig.PublishToDir.Replace("/", "\\") + "\\", "");
+
+                            if (subbasedir.Contains("\\") && !subbasedir.StartsWith("runtimes", StringComparison.OrdinalIgnoreCase) && !subbasedir.StartsWith("RootExternalDLLs", StringComparison.OrdinalIgnoreCase) && subbasedir.ToLower().IndexOf("printboxno") == -1)
+                            {
+                                isexclude = true;
+                                foreach (var item in excludeBaseDir)
+                                {
+                                    if (fi.FilePath.ToLower().IndexOf(item.ToLower()) > -1)
+                                    {
+                                        isexclude = false;
+                                        break;
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+
+                    if (isexclude)
+                    {
+                        notAllowUpdateFiles.Add(fi.FilePath); continue;
+                    }
+                    this.listView1.Items.Add(new ListViewItem(new string[] { fi.FilePath, fi.FileDate.ToString(), fi.isChanged ? "change" : "no change" }));
+                }
+
+            }
         }
     }
 }

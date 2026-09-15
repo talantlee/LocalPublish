@@ -894,11 +894,11 @@ namespace AutoLocalPublish
 
         private async void button1_Click(object sender, EventArgs e)
         {
-            if(!(System.Environment.UserName.IndexOf("ErpUpdate",StringComparison.OrdinalIgnoreCase) >-1 || System.Environment.UserName.IndexOf("dagger",StringComparison.OrdinalIgnoreCase) >-1))
-            {
-                MessageBox.Show("你的 帳號不能測試。");
-                return;
-            }
+            //if(!(System.Environment.UserName.IndexOf("ErpUpdate",StringComparison.OrdinalIgnoreCase) >-1 || System.Environment.UserName.IndexOf("dagger",StringComparison.OrdinalIgnoreCase) >-1))
+            //{
+            //    MessageBox.Show("你的 帳號不能測試。");
+            //    return;
+            //}
             currentUpdateFIles = new List<string>();
             currentUpdateFIlesBase = new List<string>();
             ProgressCount = 0;

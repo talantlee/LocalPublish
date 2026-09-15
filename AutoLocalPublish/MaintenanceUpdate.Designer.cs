@@ -63,11 +63,11 @@
             // 
             // btnStartScan
             // 
-            this.btnStartScan.Location = new System.Drawing.Point(589, 30);
+            this.btnStartScan.Location = new System.Drawing.Point(568, 23);
             this.btnStartScan.Name = "btnStartScan";
-            this.btnStartScan.Size = new System.Drawing.Size(93, 23);
+            this.btnStartScan.Size = new System.Drawing.Size(114, 30);
             this.btnStartScan.TabIndex = 10;
-            this.btnStartScan.Text = "Test";
+            this.btnStartScan.Text = "正式發佈";
             this.btnStartScan.UseVisualStyleBackColor = true;
             this.btnStartScan.Click += new System.EventHandler(this.button1_Click);
             // 

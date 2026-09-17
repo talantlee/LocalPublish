@@ -39,10 +39,10 @@
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.panel2 = new System.Windows.Forms.Panel();
+            this.lbl_status = new System.Windows.Forms.Label();
             this.tbx_publishdir = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
-            this.lbl_status = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -63,7 +63,7 @@
             // 
             // btnStartScan
             // 
-            this.btnStartScan.Location = new System.Drawing.Point(568, 23);
+            this.btnStartScan.Location = new System.Drawing.Point(12, 21);
             this.btnStartScan.Name = "btnStartScan";
             this.btnStartScan.Size = new System.Drawing.Size(114, 30);
             this.btnStartScan.TabIndex = 10;
@@ -93,18 +93,20 @@
             // button5
             // 
             this.button5.BackColor = System.Drawing.SystemColors.Highlight;
-            this.button5.Location = new System.Drawing.Point(21, 23);
+            this.button5.Location = new System.Drawing.Point(588, 23);
             this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(144, 33);
+            this.button5.Size = new System.Drawing.Size(108, 33);
             this.button5.TabIndex = 0;
             this.button5.Text = "正式發佈";
             this.button5.UseVisualStyleBackColor = false;
+            this.button5.Visible = false;
             this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
             // lbl_vertify
             // 
             this.lbl_vertify.AutoSize = true;
             this.lbl_vertify.Font = new System.Drawing.Font("新細明體", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lbl_vertify.ForeColor = System.Drawing.SystemColors.HotTrack;
             this.lbl_vertify.Location = new System.Drawing.Point(233, 23);
             this.lbl_vertify.Name = "lbl_vertify";
             this.lbl_vertify.Size = new System.Drawing.Size(0, 22);
@@ -151,6 +153,14 @@
             this.panel2.Size = new System.Drawing.Size(891, 91);
             this.panel2.TabIndex = 5;
             // 
+            // lbl_status
+            // 
+            this.lbl_status.AutoSize = true;
+            this.lbl_status.Location = new System.Drawing.Point(3, 3);
+            this.lbl_status.Name = "lbl_status";
+            this.lbl_status.Size = new System.Drawing.Size(0, 12);
+            this.lbl_status.TabIndex = 11;
+            // 
             // tbx_publishdir
             // 
             this.tbx_publishdir.Location = new System.Drawing.Point(89, 36);
@@ -175,14 +185,6 @@
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(891, 10);
             this.progressBar1.TabIndex = 6;
-            // 
-            // lbl_status
-            // 
-            this.lbl_status.AutoSize = true;
-            this.lbl_status.Location = new System.Drawing.Point(3, 3);
-            this.lbl_status.Name = "lbl_status";
-            this.lbl_status.Size = new System.Drawing.Size(0, 12);
-            this.lbl_status.TabIndex = 11;
             // 
             // MaintenanceUpdate
             // 

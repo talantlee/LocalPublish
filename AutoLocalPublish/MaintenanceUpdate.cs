@@ -97,6 +97,11 @@ namespace AutoLocalPublish
 
         private void moveRootDlls(string basedir)
         {
+            if (!Directory.Exists(Path.Combine(basedir, "RootExternalDLLs")))
+            {
+                Directory.CreateDirectory(Path.Combine(basedir, "RootExternalDLLs"));
+                return;
+            }
             //Move RootExternalDLLs
             string[] rootFileList = System.IO.Directory.GetFiles(basedir, "*.*", System.IO.SearchOption.TopDirectoryOnly);
             int sepcialbasedll = 0;
@@ -109,38 +114,35 @@ namespace AutoLocalPublish
                         try
                         {
 
-
-                            if (!Directory.Exists(Path.Combine(basedir, "RootExternalDLLs")))
-                            {
-                                Directory.CreateDirectory(Path.Combine(basedir, "RootExternalDLLs"));
-                            }
-                            if ("SharpDevelop.Base.dll" == Path.GetFileName(f) && f.IndexOf("RootExternalDLLs") > -1)
-                            {
-                                sepcialbasedll++;
-                            }
-                            else if ("SharpDevelop.Base.dll" == Path.GetFileName(f) && f.IndexOf("RootExternalDLLs") == -1)
-                            {
-                                sepcialbasedll--;
-                            }
+                            //if ("SharpDevelop.Base.dll" == Path.GetFileName(f) && f.IndexOf("RootExternalDLLs") > -1)
+                            //{
+                            //    sepcialbasedll++;
+                            //}
+                            //else if ("SharpDevelop.Base.dll" == Path.GetFileName(f) && f.IndexOf("RootExternalDLLs") == -1)
+                            //{
+                            //    sepcialbasedll--;
+                            //}
 
                             if (File.Exists(Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f))))
                             {
-
-
-
 
                                 FileInfo file1 = new FileInfo(f);
                                 FileInfo file2 = new FileInfo(Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)));
 
                                 if (file1.LastWriteTime > file2.LastWriteTime)
                                 {
-                                    File.Copy(f, Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)));
+                                    CopyFile(f, Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)));
+                                }
+                                else if ("SharpDevelop.Base.dll" != Path.GetFileName(f) && file1.LastWriteTime < file2.LastWriteTime)
+                                {
+                                    CopyFile(file2.FullName, file1.FullName);
+
                                 }
 
                             }
                             else
                             {
-                                File.Copy(f, Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)));
+                                CopyFile(f, Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)));
                             }
 
                             dosuccess = true;
@@ -158,7 +160,7 @@ namespace AutoLocalPublish
 
                                         if (file1.LastWriteTime > file2.LastWriteTime)
                                         {
-                                            File.Copy(f, Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)));
+                                            CopyFile(f, Path.Combine(basedir, "RootExternalDLLs", Path.GetFileName(f)));
                                         }
                                         dosuccess = true;
                                     }
@@ -195,23 +197,23 @@ namespace AutoLocalPublish
                     }
                 }
 
-            if (sepcialbasedll > 0)
-            {
-                try
-                {
-                    FileInfo file1 = new FileInfo(Path.Combine(basedir, "SharpDevelop.Base.dll"));
-                    FileInfo file2 = new FileInfo(Path.Combine(basedir, "RootExternalDLLs", "SharpDevelop.Base.dll"));
+            //if (sepcialbasedll > 0)
+            //{
+            //    try
+            //    {
+            //        FileInfo file1 = new FileInfo(Path.Combine(basedir, "SharpDevelop.Base.dll"));
+            //        FileInfo file2 = new FileInfo(Path.Combine(basedir, "RootExternalDLLs", "SharpDevelop.Base.dll"));
 
-                    if (file1.LastWriteTime < file2.LastWriteTime)
-                    {
-                        File.Copy(file2.FullName, file1.FullName);
-                    }
-                }
-                catch
-                {
+            //        if (file1.LastWriteTime < file2.LastWriteTime)
+            //        {
+            //            ReplaceFile(file2.FullName, file1.FullName);
+            //        }
+            //    }
+            //    catch
+            //    {
 
-                }
-            }
+            //    }
+            //}
         }
         private static bool isRootExtentDll(string filename)
         {
@@ -724,6 +726,7 @@ namespace AutoLocalPublish
                 ProgressCount += 20;
                 progress?.Report(new ScanProgress { CurrentCount = ProgressCount, CurrentFilePath = $"發佈成功。 公告號：{BroadcastAutoId}" });
                 this.lbl_vertify.Text = $"發佈成功。 公告號：{BroadcastAutoId}";
+                LogMessage($"發佈成功。 公告號：{BroadcastAutoId}");
                 BroadcastAutoIdLast = BroadcastAutoId;
                 WriteLog($"publish version.[{newVsersion}] By {System.Environment.UserName}  BroadcastAutoId={BroadcastAutoId}");
 
@@ -740,6 +743,7 @@ namespace AutoLocalPublish
                 {
                     if (currentUpdateFIlesBase != null && currentUpdateFIlesBase.Count > 0)
                     {
+                   
                         WriteCurrentUpdateFilesToExcel();
                         ProgressCount += 20;
                         progress?.Report(new ScanProgress { CurrentCount = ProgressCount, CurrentFilePath = "Write Version Files." });
@@ -891,7 +895,16 @@ namespace AutoLocalPublish
             this.lbl_vertify.Text = $"當前版本號為：{currentVersion}";
 
         }
-
+        private void LogMessage(string msg)
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action(() => LogMessage(msg)));
+                return;
+            }
+        
+            this.lbl_status.Text = msg;
+        }
         private async void button1_Click(object sender, EventArgs e)
         {
             //if(!(System.Environment.UserName.IndexOf("ErpUpdate",StringComparison.OrdinalIgnoreCase) >-1 || System.Environment.UserName.IndexOf("dagger",StringComparison.OrdinalIgnoreCase) >-1))
@@ -911,15 +924,15 @@ namespace AutoLocalPublish
             //todo:除了runtimes 或根目錄，其他地方不允許放置dll,exe.
             IList<NeedCopyFile> needCopyFiles = new List<NeedCopyFile>();
 
-
-            lbl_status.Text = "準備掃描...";
+            LogMessage($"準備掃描...{AppConfig.PublishToDir}");
+          
 
             // 2. 定义进度回调（此 Lambda 表达式会自动在 UI 线程执行）
             var progress = new Progress<ScanProgress>(report =>
             {
                 // 在这里更新 UI 控件，不会报跨线程异常
-                lbl_status.Text = $"正在掃描：{report.CurrentFilePath}";
-
+              //  lbl_status.Text = $"正在掃描：{report.CurrentFilePath}";
+                LogMessage($"正在掃描：{report.CurrentFilePath}");
                 // 如果知道总文件数，可以更新进度条百分比
                 // progressBar1.Value = (int)((double)report.CurrentCount / totalCount * 100);
 
@@ -935,7 +948,7 @@ namespace AutoLocalPublish
                 // 3. 传入 progress 对象进行异步扫描
                 List<ReleaseFileInfo> snapshots = await GetFileSnapshotsAsync(AppConfig.PublishToDir, needCopyFiles,progress);
 
-                lbl_status.Text = $"掃描完成！共發現 {snapshots.Count} 個文件 需要更新。";
+                LogMessage($"掃描{FileCount}完成！共發現 {snapshots.Count} 個文件 需要更新。");
                 progressBar1.Style = ProgressBarStyle.Continuous;
                 progressBar1.Value = 100;
 
@@ -943,12 +956,14 @@ namespace AutoLocalPublish
                 {
                     StringBuilder sb = new StringBuilder();
                     foreach (var f in notAllowUpdateFiles) { sb.Append(f.ToString()).AppendLine(); }
+             
                     MessageBox.Show("這些文件不允許更新到客戶端，請確認：\n" + sb.ToString());
                     return;
                 }
                 if (snapshots.Count == 0)
                 {
                     this.lbl_vertify.Text = "沒有文件需要更新。";
+                    LogMessage($"掃描{FileCount}完成！共發現 {snapshots.Count} 個文件 需要更新。");
                     return;
                 }
 
@@ -970,7 +985,7 @@ namespace AutoLocalPublish
                          var progress1 = new Progress<ScanProgress>(report =>
                         {
                             // 在这里更新 UI 控件，不会报跨线程异常
-                            lbl_status.Text = $"版本文件存儲中到DataBase：{snapshots.Count}";
+                            LogMessage($"版本文件存儲中到DataBase：{snapshots.Count}");
                             if (progressBar1.Style != ProgressBarStyle.Marquee)
                             {
                                 progressBar1.Style = ProgressBarStyle.Marquee;
@@ -984,7 +999,7 @@ namespace AutoLocalPublish
                             var progress2 = new Progress<ScanProgress>(report =>
                             {
                                 // 在这里更新 UI 控件，不会报跨线程异常
-                                lbl_status.Text = $"發佈版本到APP服務器，文件個數：{snapshots.Count}";
+                                LogMessage($"發佈版本到APP服務器，文件個數：{snapshots.Count}");
                                 if (progressBar1.Style != ProgressBarStyle.Marquee)
                                 {
                                     progressBar1.Style = ProgressBarStyle.Marquee;
@@ -1006,12 +1021,12 @@ namespace AutoLocalPublish
             }
             catch (UnauthorizedAccessException ex)
             {
-                lbl_status.Text = "掃描中斷：沒有權限訪問某些目錄。";
+                LogMessage("掃描中斷：沒有權限訪問某些目錄。");
                 MessageBox.Show($"掃描中斷：{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (Exception ex)
             {
-                lbl_status.Text = "掃描中斷：发生未知错误。";
+                LogMessage("掃描中斷：发生未知错误。");
                 MessageBox.Show($"掃描中斷：{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
@@ -1088,14 +1103,22 @@ namespace AutoLocalPublish
 
                     BroadcastAutoId = Convert.ToInt32(db.ExecuteScalar(tran, "Broadcast_Edit", 0, newVsersion, "Upgrade", "", "ALL", userid, "N", "updates"));
                     tran.Commit();
-                    
+                    LogMessage($"已經產生版本號的數據。公告號為: {BroadcastAutoId}");
                     this.lbl_vertify.Text = $"已經產生版本號的數據。公告號為: {BroadcastAutoId}";
-                   
-                    /*Copy FIle*/
 
+                    /*Copy FIle*/
+                    if(needCopys!=null&& needCopys.Count > 0)
+                    {
+                        if (!Directory.Exists(Path.Combine(AppConfig.PublishToDir, "RootExternalDLLs")))
+                            Directory.CreateDirectory(Path.Combine(AppConfig.PublishToDir, "RootExternalDLLs"));
+                    }
+                    
+                   
                     foreach (NeedCopyFile fi in needCopys)
-                    { 
-                        File.Copy(fi.FromPath, fi.ToPath, true);
+                    {
+                        LogMessage($"Copy File: {fi.FromPath} to {fi.ToPath}");
+                        CopyFile(fi.FromPath, fi.ToPath);
+                       // File.Copy(fi.FromPath, fi.ToPath, true);
                         ProgressCount++;
                         progress?.Report(new ScanProgress
                         {
@@ -1118,7 +1141,38 @@ namespace AutoLocalPublish
 
             }
         }
+        public  bool CopyFile(string sourcePath, string targetPath)
+        {
+            // Ensure target directory exists
+          //  Directory.CreateDirectory(Path.GetDirectoryName(targetPath) ?? Path.GetDirectoryName(Environment.CurrentDirectory)!);
+
+            // If target does not exist, just move
+            if (!File.Exists(targetPath))
+            {
+                File.Copy(sourcePath, targetPath, true);
+                return true;
+            }
+
+            try
+            {
+                File.Copy(sourcePath, targetPath, true);
+                return true;
+            }
+            catch
+            {
+                try
+                {
+                    File.SetAttributes(targetPath, FileAttributes.Normal);
+                    File.Copy(sourcePath, targetPath, true);
+                    return true;
+                }
+                catch { }
+                return false;
+            }
+            //}
+        }
         private static int ProgressCount = 0;
+        private  int FileCount = 0;
         /// <summary>
         /// 异步获取目录下的所有文件快照
         /// 注意：此方法会抛出异常（如权限不足），请在调用方进行 try-catch 处理
@@ -1127,25 +1181,192 @@ namespace AutoLocalPublish
         {
             // 使用 ConcurrentBag 保证线程安全，且并发添加性能优于 List
             var fileSnapshots = new ConcurrentBag<ReleaseFileInfo>();
+            FileCount = 0;
 
+            // 将耗时的 I/O 操作放入后台线程池执行，避免阻塞 WinForms UI 线程
+            //await Task.Run(() =>
+            //{
+            //    // EnumerateFiles 延迟加载，比 GetFiles 更省内存且启动更快
+            //    // 遇到无权限目录会直接抛出 UnauthorizedAccessException，满足中断需求
+            //    foreach (var fullPath in Directory.EnumerateFiles(rootDirectory, "*", SearchOption.TopDirectoryOnly))
+            //    {
+
+            //        if (fullPath.EndsWith(".pdb",StringComparison.OrdinalIgnoreCase) ||
+            //        fullPath.EndsWith(".bat", StringComparison.OrdinalIgnoreCase) ||
+            //          fullPath.EndsWith(".scc", StringComparison.OrdinalIgnoreCase) ||
+            //            fullPath.EndsWith(".lng", StringComparison.OrdinalIgnoreCase) ||
+            //              fullPath.EndsWith(".db", StringComparison.OrdinalIgnoreCase) ||
+            //                fullPath.EndsWith(".db", StringComparison.OrdinalIgnoreCase) ||
+            //                fullPath.EndsWith(".deps.json", StringComparison.OrdinalIgnoreCase) ||
+            //                fullPath.EndsWith("defaultLoginer.xml", StringComparison.OrdinalIgnoreCase)||
+            //                (fullPath.IndexOf("Infragistics.") > -1 && fullPath.IndexOf(".xml") > -1)
+            //        ) { 
+            //            continue;
+            //        }
+
+            //        //if (fullPath.ToLower().IndexOf(".lng") > -1) { continue; } // 不知道誰建立了一個 ChsEng.lng；
+            //        //if (fullPath.IndexOf(".db") > -1) { continue; }
+            //        if (fullPath.Contains("\\ref\\") || fullPath.Contains("\\logs\\")
+            //             || fullPath.Contains("\\StartUp.exe.WebView2\\")
+            //             || fullPath.Contains("\\NMERP.exe.WebView2\\")
+            //             || fullPath.Contains("\\WebView2Data\\EBWebView\\")
+            //             || fullPath.Contains("\\WebView2Data\\tempfiles\\")
+            //             || fullPath.Contains("\\data\\UserSet\\")
+            //             || fullPath.Contains("\\updated\\")
+            //              || fullPath.Contains("\\RootExternalDLLs\\")
+            //        ) continue;
+            //        LogMessage($"比對 {fullPath} 中。");
+            //        //if (fullPath.IndexOf("Infragistics.") > -1 && fullPath.IndexOf(".xml") > -1) { continue; }
+
+            //        //if (fullPath.IndexOf("\\ref\\", StringComparison.OrdinalIgnoreCase) > -1) { continue; }
+            //        //if (fullPath.IndexOf("\\logs\\", StringComparison.OrdinalIgnoreCase) > -1) { continue; }
+            //        //if (fullPath.IndexOf("\\RootExternalDLLs\\", StringComparison.OrdinalIgnoreCase) > -1) { continue; }
+
+
+            //        //if (fullPath.IndexOf("\\StartUp.exe.WebView2\\") > -1) { continue; }
+            //        //if (fullPath.IndexOf("\\NMERP.exe.WebView2\\") > -1) { continue; }
+
+
+            //        //    if (fullPath.IndexOf("\\WebView2Data\\EBWebView\\") > -1) { continue; }
+            //        //    if (fullPath.IndexOf("\\WebView2Data\\tempfiles\\") > -1) { continue; }
+            //        //    if (fullPath.IndexOf(".deps.json") > -1) { continue; }//dagger.li 2023-12-20
+
+
+
+            //        //if (fullPath.IndexOf("\\data\\UserSet\\") > -1) { continue; }
+            //        //if (fullPath.IndexOf("\\updated\\") > -1) { continue; }
+            //        //if (fullPath.IndexOf("Infragistics.") > -1 && f.IndexOf(".xml") > -1) { continue; }
+            //        //if (fullPath.IndexOf("defaultLoginer.xml") > -1) { continue; }
+            //        string offsetpath = Path.GetFullPath(fullPath).Substring(Path.GetFullPath(rootDirectory).Length + 1);
+            //        var fileInfo = new FileInfo(fullPath);
+            //        long filedate=fileInfo.LastWriteTime.Ticks;
+            //        long filesize = fileInfo.Length;
+
+            //        if (fullPath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || fullPath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+            //        {
+            //            if (offsetpath == fileInfo.Name || offsetpath.StartsWith("runtimes", StringComparison.OrdinalIgnoreCase) || offsetpath.StartsWith("RootExternalDLLs", StringComparison.OrdinalIgnoreCase) || offsetpath.ToLower().IndexOf("printboxno")>-1)
+            //            {
+
+            //            }else
+            //            {
+            //                notAllowUpdateFiles.Add(offsetpath);
+            //                continue;
+            //            }
+            //        }
+            //        bool exclude = false;
+            //        foreach (var item in excludeFiles)
+            //        {
+            //            if (offsetpath.IndexOf(item.ToLower(),StringComparison.OrdinalIgnoreCase) > -1)
+            //            {
+            //                notAllowUpdateFiles.Add(offsetpath);
+            //                exclude = true;
+            //                break;
+            //            }
+            //        }
+            //        if (exclude) continue;
+            //        if (AutoLocalPublish.Form1.RootExternalDLLs.Contains(Path.GetFileName(fullPath)) || extRootExternalDLLs.Contains(Path.GetFileName(fullPath)))
+            //        {
+            //            if (offsetpath == fileInfo.Name)//根目錄的dll  //|| offsetpath.Contains("RootExternalDLLs")
+            //            {
+            //                //check RootExternalDLLs
+            //                if (File.Exists(Path.Combine(rootDirectory, "RootExternalDLLs", Path.GetFileName(fullPath))))
+            //                {
+            //                    FileInfo file2 = new FileInfo(Path.Combine(rootDirectory, "RootExternalDLLs", Path.GetFileName(fullPath)));
+            //                    if (fileInfo.LastWriteTime > file2.LastWriteTime)
+            //                    {
+
+            //                        //record to copy
+            //                        needCopyFiles.Add(new NeedCopyFile() { FromPath = fullPath, ToPath = Path.Combine(rootDirectory, "RootExternalDLLs", fileInfo.Name) });
+            //                        //  File.Copy(fullPath, Path.Combine(rootDirectory, "RootExternalDLLs", Path.GetFileName(fullPath)), true);
+            //                    }
+            //                    else if (fileInfo.LastWriteTime < file2.LastWriteTime)
+            //                    {
+            //                        filedate = file2.LastWriteTime.Ticks;
+            //                        filesize = file2.Length;
+            //                        if ("SharpDevelop.Base.dll" == fileInfo.Name)
+            //                        {
+            //                            needCopyFiles.Add(new NeedCopyFile() { FromPath = file2.FullName, ToPath = fullPath });
+
+            //                            // File.Copy(file2.FullName, fullPath, true);
+            //                        }
+            //                    }
+            //                    else
+            //                    {
+            //                        // File.Delete(fullPath);//時間相等
+            //                        continue;
+            //                    }
+            //                }
+            //            }
+            //        }
+
+            //        //比較文件大小
+            //        bool isnotchange = false;
+            //        foreach (DataRow dr in OldData.Rows)
+            //        {
+            //            if (dr["AssemblyPath"].ToString().Equals(offsetpath.Replace("/", "\\"), StringComparison.OrdinalIgnoreCase))
+            //            {
+
+            //                if (Convert.ToInt64(dr["FileDate"]) == filedate)
+            //                {
+            //                    isnotchange = true;
+            //                    break;
+            //                }
+            //                break;
+            //            }
+            //        }
+            //        if (!isnotchange)
+            //        {
+            //            var snapshot = new ReleaseFileInfo(fullPath, offsetpath, fileInfo.Name, filedate, filesize);
+            //            fileSnapshots.Add(snapshot);
+            //        }
+            //        ProgressCount++;
+
+            //         progress?.Report(new ScanProgress
+            //        {
+            //            CurrentCount = ProgressCount,
+            //            CurrentFilePath = fullPath
+            //        });
+            //    }
+            //});
+            List<Task<bool>> taskList = new List<Task<bool>>();
+
+           // await GetDirFileAsync(rootDirectory, fileSnapshots, needCopyFiles, progress, false);
+            taskList.Add(GetDirFileAsync(rootDirectory, fileSnapshots, needCopyFiles, progress, false));
+            foreach (var fulldir in Directory.EnumerateDirectories(rootDirectory, "*", SearchOption.TopDirectoryOnly))
+            {
+                if (fulldir.EndsWith("RootExternalDLLs", StringComparison.OrdinalIgnoreCase) || fulldir.EndsWith("logs", StringComparison.OrdinalIgnoreCase) || fulldir.EndsWith("logs", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                taskList.Add(GetDirFileAsync(fulldir, fileSnapshots, needCopyFiles, progress));
+               //await  GetDirFileAsync(fulldir, fileSnapshots, needCopyFiles, progress);
+            }
+            bool[] results = await Task.WhenAll(taskList);
+            // 转为 List 方便后续在内存中进行 LINQ 比对或排序
+            return new List<ReleaseFileInfo>(fileSnapshots);
+        }
+
+        public async Task<bool> GetDirFileAsync(string rootDirectory, ConcurrentBag<ReleaseFileInfo> fileSnapshots,  IList<NeedCopyFile> needCopyFiles, IProgress<ScanProgress> progress = null,bool searchAllDirectories = true)
+        {
 
             // 将耗时的 I/O 操作放入后台线程池执行，避免阻塞 WinForms UI 线程
             await Task.Run(() =>
             {
                 // EnumerateFiles 延迟加载，比 GetFiles 更省内存且启动更快
                 // 遇到无权限目录会直接抛出 UnauthorizedAccessException，满足中断需求
-                foreach (var fullPath in Directory.EnumerateFiles(rootDirectory, "*", SearchOption.AllDirectories))
+                foreach (var fullPath in Directory.EnumerateFiles(rootDirectory, "*", searchAllDirectories?SearchOption.AllDirectories: SearchOption.TopDirectoryOnly))
                 {
-                    if (fullPath.EndsWith(".pdb",StringComparison.OrdinalIgnoreCase) ||
+                    FileCount++;
+
+                    if (fullPath.EndsWith(".pdb", StringComparison.OrdinalIgnoreCase) ||
                     fullPath.EndsWith(".bat", StringComparison.OrdinalIgnoreCase) ||
                       fullPath.EndsWith(".scc", StringComparison.OrdinalIgnoreCase) ||
                         fullPath.EndsWith(".lng", StringComparison.OrdinalIgnoreCase) ||
                           fullPath.EndsWith(".db", StringComparison.OrdinalIgnoreCase) ||
                             fullPath.EndsWith(".db", StringComparison.OrdinalIgnoreCase) ||
                             fullPath.EndsWith(".deps.json", StringComparison.OrdinalIgnoreCase) ||
-                            fullPath.EndsWith("defaultLoginer.xml", StringComparison.OrdinalIgnoreCase)||
+                            fullPath.EndsWith("defaultLoginer.xml", StringComparison.OrdinalIgnoreCase) ||
                             (fullPath.IndexOf("Infragistics.") > -1 && fullPath.IndexOf(".xml") > -1)
-                    ) { 
+                    )
+                    {
                         continue;
                     }
 
@@ -1160,39 +1381,20 @@ namespace AutoLocalPublish
                          || fullPath.Contains("\\updated\\")
                           || fullPath.Contains("\\RootExternalDLLs\\")
                     ) continue;
-               
-                    //if (fullPath.IndexOf("Infragistics.") > -1 && fullPath.IndexOf(".xml") > -1) { continue; }
-
-                    //if (fullPath.IndexOf("\\ref\\", StringComparison.OrdinalIgnoreCase) > -1) { continue; }
-                    //if (fullPath.IndexOf("\\logs\\", StringComparison.OrdinalIgnoreCase) > -1) { continue; }
-                    //if (fullPath.IndexOf("\\RootExternalDLLs\\", StringComparison.OrdinalIgnoreCase) > -1) { continue; }
-
-
-                    //if (fullPath.IndexOf("\\StartUp.exe.WebView2\\") > -1) { continue; }
-                    //if (fullPath.IndexOf("\\NMERP.exe.WebView2\\") > -1) { continue; }
-
-
-                    //    if (fullPath.IndexOf("\\WebView2Data\\EBWebView\\") > -1) { continue; }
-                    //    if (fullPath.IndexOf("\\WebView2Data\\tempfiles\\") > -1) { continue; }
-                    //    if (fullPath.IndexOf(".deps.json") > -1) { continue; }//dagger.li 2023-12-20
-
-
-
-                    //if (fullPath.IndexOf("\\data\\UserSet\\") > -1) { continue; }
-                    //if (fullPath.IndexOf("\\updated\\") > -1) { continue; }
-                    //if (fullPath.IndexOf("Infragistics.") > -1 && f.IndexOf(".xml") > -1) { continue; }
-                    //if (fullPath.IndexOf("defaultLoginer.xml") > -1) { continue; }
-                    string offsetpath = Path.GetFullPath(fullPath).Substring(Path.GetFullPath(rootDirectory).Length + 1);
+                    LogMessage($"比對 {fullPath} 中。");
+  
+                    string offsetpath = Path.GetFullPath(fullPath).Substring(Path.GetFullPath(AppConfig.PublishToDir).Length + 1);
                     var fileInfo = new FileInfo(fullPath);
-                    long filedate=fileInfo.LastWriteTime.Ticks;
+                    long filedate = fileInfo.LastWriteTime.Ticks;
                     long filesize = fileInfo.Length;
 
                     if (fullPath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || fullPath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                     {
-                        if (offsetpath == fileInfo.Name || offsetpath.StartsWith("runtimes", StringComparison.OrdinalIgnoreCase) || offsetpath.StartsWith("RootExternalDLLs", StringComparison.OrdinalIgnoreCase) || offsetpath.ToLower().IndexOf("printboxno")>-1)
+                        if (offsetpath == fileInfo.Name || offsetpath.StartsWith("runtimes", StringComparison.OrdinalIgnoreCase) || offsetpath.StartsWith("RootExternalDLLs", StringComparison.OrdinalIgnoreCase) || offsetpath.ToLower().IndexOf("printboxno") > -1)
                         {
 
-                        }else
+                        }
+                        else
                         {
                             notAllowUpdateFiles.Add(offsetpath);
                             continue;
@@ -1201,7 +1403,7 @@ namespace AutoLocalPublish
                     bool exclude = false;
                     foreach (var item in excludeFiles)
                     {
-                        if (offsetpath.IndexOf(item.ToLower(),StringComparison.OrdinalIgnoreCase) > -1)
+                        if (offsetpath.IndexOf(item.ToLower(), StringComparison.OrdinalIgnoreCase) > -1)
                         {
                             notAllowUpdateFiles.Add(offsetpath);
                             exclude = true;
@@ -1231,7 +1433,7 @@ namespace AutoLocalPublish
                                     if ("SharpDevelop.Base.dll" == fileInfo.Name)
                                     {
                                         needCopyFiles.Add(new NeedCopyFile() { FromPath = file2.FullName, ToPath = fullPath });
-                                
+
                                         // File.Copy(file2.FullName, fullPath, true);
                                     }
                                 }
@@ -1265,17 +1467,15 @@ namespace AutoLocalPublish
                         fileSnapshots.Add(snapshot);
                     }
                     ProgressCount++;
-            
-                     progress?.Report(new ScanProgress
+
+                    progress?.Report(new ScanProgress
                     {
                         CurrentCount = ProgressCount,
                         CurrentFilePath = fullPath
                     });
                 }
             });
-
-            // 转为 List 方便后续在内存中进行 LINQ 比对或排序
-            return new List<ReleaseFileInfo>(fileSnapshots);
+            return true;
         }
         public class NeedCopyFile
         {
